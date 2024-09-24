@@ -1,20 +1,22 @@
 #include "raylib.h"
+#include "map.h"
 
 int main()
 {
-    Color darkGreen = Color{20, 160, 133, 255};
+    Color lightgray = Color{ 200, 200, 200, 255 };
 
-    const int screenWidth = 800;
-    const int screenHeight = 600;
+    const int screenWidth = 1000;
+    const int screenHeight = 1000;
 
-
+    Map map(10, 50);
     InitWindow(screenWidth, screenHeight, "Hotel Escape");
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
     {
         BeginDrawing();
-        ClearBackground(darkGreen);
+        ClearBackground(lightgray);
+        map.drawMap();
         EndDrawing();
     }
 

@@ -2,17 +2,17 @@
 
 Map::Map(int x, int y)
 {
-    if(x > mapMaxSizeX || y > mapMaxSizeY)
+    if(x >= mapMaxSizeX || y >= mapMaxSizeY)
     {
-        x = mapMaxSizeX;
-        y = mapMaxSizeY;
+        x = mapMaxSizeX - 1;
+        y = mapMaxSizeY - 1;
     }
 
     mapSizeX = x;
     mapSizeY = y;
 
-    leftOffest = 0;
     topOffest = 0;
+    leftOffest = 0;
 
     for (int i = 0; i < mapMaxSizeX; i++)
     {
@@ -24,20 +24,20 @@ Map::Map(int x, int y)
     }
 
     if(mapSizeX < mapMaxSizeX){
-        leftOffest = round((mapMaxSizeX - mapSizeX) / 2);
+        topOffest = round((mapMaxSizeX - mapSizeX) / 2);
     }
 
     if(mapSizeY < mapMaxSizeY){
-        topOffest = round((mapMaxSizeY - mapSizeY) / 2);
+        leftOffest = round((mapMaxSizeY - mapSizeY) / 2);
     }
 
-    std::cout << "leftOffest: " << leftOffest << std::endl;
     std::cout << "topOffest: " << topOffest << std::endl;
+    std::cout << "leftOffest: " << leftOffest << std::endl;
     for (int i = 0; i < mapMaxSizeX; i++)
     {
        for (int j = 0; j < mapMaxSizeY; j++)
        {
-            if((i>= leftOffest && i < mapSizeX + leftOffest) && (j >= topOffest && j < mapSizeY + topOffest)){
+            if((i >= topOffest && i < mapSizeX + topOffest) && (j >= leftOffest && j < mapSizeY + leftOffest)){
                 grid[i][j] = GridElement::PATH;
             }
        }
@@ -77,7 +77,7 @@ void Map::drawMap()
             if(grid[row][column] == GridElement::EMPTY){
                 DrawRectangle(column * tileSize, row * tileSize, tileSize, tileSize, clr);
             }else{
-                DrawRectangle(column * tileSize+1, row * tileSize+1, tileSize-1, tileSize-1, clr);
+                DrawRectangle(column * tileSize + 1, row * tileSize + 1, tileSize - 1, tileSize - 1, clr);
             }
        }
        
@@ -87,11 +87,13 @@ void Map::drawMap()
 
 void Map::generateMapElements()
 {
+    this->generateCountourWalls();
     this->generateWalls();
 }
 
 void Map::generateWalls()
 {
+    
     int nbrWall = (mapSizeY / 3) + rand() % ((mapSizeY / 2) - (mapSizeY / 5) + 1 - 1);
     int maxWallLength = mapSizeY / 2 + (mapSizeY / 4);
     int wallLength, posY, posX;
@@ -99,8 +101,8 @@ void Map::generateWalls()
     std::cout << "nbrWall: " << nbrWall << std::endl;
     for (int i = 0; i < nbrWall; i++)
     {
-        posY = rand() %(this->topOffest + 1  + (this->topOffest + mapSizeY));
-        posX = rand() %(this->leftOffest  + (this->leftOffest + mapSizeX));  
+        posY = rand() % (this->leftOffest + 1 + (this->leftOffest + mapSizeY));
+        posX = rand() % (this->topOffest + (this->topOffest + mapSizeX));  
 
         wallLength = (maxWallLength / 2) + rand() % (maxWallLength - (maxWallLength / 2) + 1 - 1);
 
@@ -124,12 +126,12 @@ void Map::generateWall(int posX, int posY, Direction dir, int length, int mapSiz
     bool breach = false;
     for (int i = 0; i < length; i++)
     {
-        if (posX < this->leftOffest  || posX >= mapSizeX + this->leftOffest || posY < this->topOffest || posY >= mapSizeY + this->topOffest) break;
+        if (posX < this->topOffest || posX >= mapSizeX + this->topOffest || posY < this->leftOffest || posY >= mapSizeY + this->leftOffest) break;
 
         grid[posX][posY] = WALL;
 
         if (dir == UP) {
-            if (posX - 1 < (this->topOffest )) break;
+            if (posX - 1 < (this->topOffest)) break;
             if (grid[posX - 1][posY] == GridElement::PATH) {
                 breach = true;
                 grid[posX - 1][posY] = GridElement::WALL;
@@ -140,7 +142,7 @@ void Map::generateWall(int posX, int posY, Direction dir, int length, int mapSiz
             }
         }
         else if (dir == DOWN) {
-            if (posY + 1 >= mapSizeX + (this->topOffest )) break;
+            if (posY + 1 >= mapSizeX + (this->topOffest)) break;
             if (grid[posX + 1][posY] == GridElement::PATH) {
                 breach = true;
                 grid[posX + 1][posY] = GridElement::WALL;
@@ -151,7 +153,7 @@ void Map::generateWall(int posX, int posY, Direction dir, int length, int mapSiz
             }
         }
         else if (dir == LEFT) {
-            if (posY - 1 < (this->leftOffest )) break;
+            if (posY - 1 < (this->leftOffest)) break;
             if (grid[posX][posY - 1] == GridElement::PATH) {
                 breach = true;
                 grid[posX][posY - 1] = GridElement::WALL;
@@ -162,7 +164,7 @@ void Map::generateWall(int posX, int posY, Direction dir, int length, int mapSiz
             }
         }
         else if (dir == RIGHT) {
-            if (posY + 1 >= mapSizeY + (this->leftOffest )) break;
+            if (posY + 1 >= mapSizeY + (this->leftOffest)) break;
             if (grid[posX][posY + 1] == GridElement::PATH) {
                 breach = true;
                 grid[posX][posY + 1] = WALL;
@@ -173,5 +175,21 @@ void Map::generateWall(int posX, int posY, Direction dir, int length, int mapSiz
             }
         }
         breach = false;
+    }
+}
+
+void Map::generateCountourWalls()
+{
+    for (int i = 0; i < mapMaxSizeX; i++)
+    {
+        for (int j = 0; j < mapMaxSizeY; j++)
+        {
+            if(i >= topOffest -1 && i < mapSizeX + topOffest + 1 && j >= leftOffest -1 && j < mapSizeY + leftOffest + 1){
+                if((i == topOffest-1 || i == mapSizeX + topOffest) || (j == leftOffest-1 || j == mapSizeY + leftOffest)){
+                    grid[i][j] = GridElement::WALL;
+                }
+            }
+            
+        }
     }
 }

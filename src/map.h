@@ -21,6 +21,7 @@ class Map{
         void generateWalls();
         //void generateDoors();
         void generateWall(int posX, int posY, Direction dir, int length, int mapSizeX, int mapSizeY);
+        void generateCountourWalls();
         int mapSizeX;
         int mapSizeY;
         int mapMaxSizeX = MAP_MAX_SIZE;

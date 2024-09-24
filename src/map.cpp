@@ -2,14 +2,54 @@
 
 Map::Map(int x, int y)
 {
-    if(x >= mapMaxSizeX || y >= mapMaxSizeY)
+    if(x >= mapMaxSizeX - 1 || y >= mapMaxSizeY - 1)
     {
-        x = mapMaxSizeX - 1;
-        y = mapMaxSizeY - 1;
+        x = mapMaxSizeX - 2;
+        y = mapMaxSizeY - 2;
     }
 
     mapSizeX = x;
     mapSizeY = y;
+
+    topOffest = 0;
+    leftOffest = 0;
+
+    for (int i = 0; i < mapMaxSizeX; i++)
+    {
+       for (int j = 0; j < mapMaxSizeY; j++)
+       {
+              grid[i][j] = GridElement::EMPTY;
+       }
+       
+    }
+
+    if(mapSizeX < mapMaxSizeX){
+        topOffest = round((mapMaxSizeX - mapSizeX) / 2);
+    }
+
+    if(mapSizeY < mapMaxSizeY){
+        leftOffest = round((mapMaxSizeY - mapSizeY) / 2);
+    }
+
+    std::cout << "topOffest: " << topOffest << std::endl;
+    std::cout << "leftOffest: " << leftOffest << std::endl;
+    for (int i = 0; i < mapMaxSizeX; i++)
+    {
+       for (int j = 0; j < mapMaxSizeY; j++)
+       {
+            if((i >= topOffest && i < mapSizeX + topOffest) && (j >= leftOffest && j < mapSizeY + leftOffest)){
+                grid[i][j] = GridElement::PATH;
+            }
+       }
+    }
+    tilesColors = Data::tilesColors();
+    generateMapElements();
+}
+
+Map::Map()
+{
+    mapSizeX = rand() % 48;
+    mapSizeY = rand() % 48;
 
     topOffest = 0;
     leftOffest = 0;
@@ -89,12 +129,13 @@ void Map::generateMapElements()
 {
     this->generateCountourWalls();
     this->generateWalls();
+    this->generateDoors();
 }
 
 void Map::generateWalls()
 {
     
-    int nbrWall = (mapSizeY / 3) + rand() % ((mapSizeY / 2) - (mapSizeY / 5) + 1 - 1);
+    int nbrWall = (mapSizeX * mapSizeY) / 60 + rand() % ((mapSizeX * mapSizeY) / 40 - (mapSizeX * mapSizeY) / 100 + 1);
     int maxWallLength = mapSizeY / 2 + (mapSizeY / 4);
     int wallLength, posY, posX;
     Direction dir;
@@ -192,4 +233,73 @@ void Map::generateCountourWalls()
             
         }
     }
+}
+
+void Map::generateDoors()
+{
+    std::vector<std::vector<bool>> visited(mapMaxSizeX, std::vector<bool>(mapMaxSizeY, false));
+    for (int i = 0; i < mapMaxSizeX; i++)
+    {
+        for (int j = 0; j < mapSizeY; j++)
+        {
+            if (grid[i][j] == GridElement::PATH && !visited[i][j]) 
+            {
+                std::vector<std::pair<int, int>> spaceLocations;
+                floodFill(j, i, spaceLocations, visited);
+                
+                // Place a door on a wall surrounding this enclosed space
+                placeDoorAroundSpace(spaceLocations);
+            }
+        }
+    }
+    
+}
+
+void Map::floodFill(int x, int y, std::vector<std::pair<int, int>> &spaceLocations, std::vector<std::vector<bool>> &visited)
+{
+   
+    if (!isInBounds(x, y) || grid[y][x] != GridElement::PATH || visited[y][x])
+        return;
+    // Mark this cell as visited
+    visited[y][x] = true;
+    // Store current space location
+    spaceLocations.push_back({x, y}); 
+    // Recursively call flood fill in all four directions
+    floodFill(x + 1, y, spaceLocations, visited); // Right
+    floodFill(x - 1, y, spaceLocations, visited); // Left
+    floodFill(x, y + 1, spaceLocations, visited); // Down
+    floodFill(x, y - 1, spaceLocations, visited); // Up
+}
+
+void Map::placeDoorAroundSpace(const std::vector<std::pair<int, int>> &spaceLocations)
+{
+    std::vector<std::pair<int, int>> wallLocations;
+    for (const auto& loc : spaceLocations) 
+    {
+        int x = loc.first;
+        int y = loc.second;
+
+        // Check adjacent cells for walls
+        if (isInBounds(x + 1 + topOffest, y + leftOffest) && grid[y + leftOffest][x + 1 + topOffest] == GridElement::WALL) 
+            wallLocations.push_back({x + 1, y + leftOffest}); // Right
+        if (isInBounds(x - 1 + topOffest, y + leftOffest) && grid[y + leftOffest][x - 1 + topOffest] == GridElement::WALL) 
+            wallLocations.push_back({x - 1, y + leftOffest}); // Left
+        if (isInBounds(x + topOffest, y + 1 + leftOffest) && grid[y + 1 + leftOffest][x + topOffest] == GridElement::WALL) 
+            wallLocations.push_back({x + topOffest, y + 1 + leftOffest}); // Down
+        if (isInBounds(x + topOffest, y - 1 + leftOffest) && grid[y - 1 + leftOffest][x + topOffest] == GridElement::WALL) 
+            wallLocations.push_back({x + topOffest, y - 1 + leftOffest}); // Up
+    }
+
+    // If there are walls to place doors on, pick one randomly
+    if (!wallLocations.empty())
+    {
+        int randomIndex = rand() % wallLocations.size();
+        auto doorLocation = wallLocations[randomIndex];
+        grid[doorLocation.second][doorLocation.first] = GridElement::DOOR; // Place the door
+    }
+}
+
+bool Map::isInBounds(int x, int y)
+{
+    return (x >= leftOffest && x < mapSizeY+topOffest && y >= topOffest && y < mapSizeX+leftOffest);
 }

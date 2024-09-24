@@ -9,7 +9,7 @@ int main()
     const int screenWidth = 1000;
     const int screenHeight = 1000;
 
-    Map map(45, 40);
+    Map map(10, 35);
     InitWindow(screenWidth, screenHeight, "Hotel Escape");
     SetTargetFPS(60);
 

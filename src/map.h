@@ -16,7 +16,11 @@ class Map{
         //void setMapSize(int x, int y);
         //int getMapSizeX();
         //int getMapSizeY();
+        void generateMapElements();
     private:
+        void generateWalls();
+        //void generateDoors();
+        void generateWall(int posX, int posY, Direction dir, int length, int mapSizeX, int mapSizeY);
         int mapSizeX;
         int mapSizeY;
         int mapMaxSizeX = MAP_MAX_SIZE;

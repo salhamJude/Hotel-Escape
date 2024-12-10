@@ -13,8 +13,8 @@ namespace Data {
         Color red  = { 230, 41, 55, 255 };
         Color green = { 0, 228, 48, 255 };
         Color blue = { 102, 191, 255, 255 };
-
-        return {black, white, orange, red, green, blue};
+        Color Pink = { 255, 109, 194, 255 };
+        return {black, white, orange, red, green, blue, Pink};
     };
 } // namespace Data
 

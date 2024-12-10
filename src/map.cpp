@@ -1,4 +1,5 @@
 #include "map.h"
+#include "raylib.h"
 
 Map::Map(int x, int y)
 {
@@ -110,6 +111,9 @@ void Map::drawMap()
                 break;
             case GridElement::PATH:
                 clr = tilesColors[1];
+                break;
+            case GridElement::VISITED:
+                clr = tilesColors[6];
                 break;
             default:
                 break;
@@ -235,25 +239,24 @@ void Map::generateCountourWalls()
     }
 }
 
-void Map::floodFill(int x, int y, std::vector<std::pair<int, int>>& enclosedArea, std::vector<std::vector<bool>> &visited) {
-     if (grid[y][x] != GridElement::PATH || visited[y][x])
-        return;
+void Map::floodFill(int x, int y, std::vector<std::pair<int, int>>& enclosedArea) {
+    
     int directions[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
     std::queue<std::pair<int, int>> q;
-    q.push({y, x});
-    visited[y][x] = true; // Mark as visited
+    q.push({x, y});
+    grid[x][y] = GridElement::VISITED; // Mark as visited
     enclosedArea.push_back({x, y});
-    std::cout << "here"  << std::endl;
+
     while (!q.empty()) {
         auto [cx, cy] = q.front();
         q.pop();
         for (auto& dir : directions) {
             int nx = cx + dir[0], ny = cy + dir[1];
-            if (nx >= topOffest && nx < mapSizeX-1 && ny >= leftOffest && ny < mapSizeY) {
-                if(grid[y][x] == GridElement::PATH && !visited[ny][nx]){
-                    std::cout << "Checking: (" << nx << ", " << ny << ")" << std::endl;
-                    visited[ny][nx] = true; // Mark as visited
-                    q.push({ny, nx});
+            if (nx >= topOffest && nx <= mapSizeX + topOffest && ny >= leftOffest && ny <= mapSizeY + leftOffest) {
+                //std::cout << "nx: " << nx << " ny: " << ny << std::endl;
+                if(grid[nx][ny] == GridElement::PATH){
+                    grid[nx][ny] = GridElement::VISITED; // Mark as visited
+                    q.push({nx, ny});
                     enclosedArea.push_back({nx, ny});
                 }
             }
@@ -262,12 +265,15 @@ void Map::floodFill(int x, int y, std::vector<std::pair<int, int>>& enclosedArea
 }
 
 bool Map::isEnclosed(const std::vector<std::pair<int, int>>& enclosedArea) {
+    std::cout << "Enclosed area: " ;
     for (auto& cell : enclosedArea) {
         int x = cell.first, y = cell.second;
-        if (x == 0 || x == mapMaxSizeX-1 || y == 0 || y == mapMaxSizeY-1) {
+        if (x == topOffest-1  || x == mapSizeX + topOffest   || y == leftOffest-1   || y == mapSizeY + leftOffest  ) {
+            std::cout << "opened: " << std::endl;
             return false; // Not enclosed if it touches the boundary
         }
     }
+    std::cout << "closed: " << std::endl;
     return true;
 }
 
@@ -281,6 +287,7 @@ void Map::placeDoor(const std::vector<std::pair<int, int>>& enclosedArea) {
                 int oppositeY = ny - dir.second;
                 if (grid[oppositeX][oppositeY] != GridElement::PATH) {
                     grid[nx][ny] = GridElement::DOOR;
+                    //std::cout << "placeDoor at "<<nx << " " << ny << std::endl;
                     return;
                 }
             }
@@ -288,16 +295,44 @@ void Map::placeDoor(const std::vector<std::pair<int, int>>& enclosedArea) {
     }
 }
 
+void Map::setPlayerPosition()
+{
+    int set = false;
+    do
+    {
+        int x = rand() % mapSizeX + topOffest;
+        int y = rand() % mapSizeY + leftOffest;
+
+        if(grid[x][y] == GridElement::PATH){
+            set = true;
+            grid[x][y] = GridElement::PLAYER;
+        }
+
+    } while (!set);
+    
+}
+
 void Map::detectAndFixEnclosedSpaces() {
-    std::vector<std::vector<bool>> visited(mapMaxSizeX, std::vector<bool>(mapMaxSizeY, false));
-    for (int x = 0; x < mapSizeX; ++x) {
-        for (int y = 0; y < mapSizeY; ++y) {
-            if (grid[x][y] == PATH && !visited[x][y]) {
+    for (int x = topOffest ; x < mapSizeX + topOffest; ++x) {
+        for (int y = leftOffest ; y < mapSizeY + leftOffest; ++y) {
+            //std::cout << "Checking: " << x << " " << y << std::endl;
+            if (grid[x][y] == GridElement::PATH) {
                 std::vector<std::pair<int, int>> enclosedArea;
-                floodFill(x, x, enclosedArea, visited);
+                floodFill(x, y, enclosedArea);
                 if (isEnclosed(enclosedArea)) {
                     placeDoor(enclosedArea);
                 }
+                break;
+            }
+        }
+    }
+
+    // Reset visited spaces back to PATH
+    for (int x = topOffest ; x < mapSizeX + topOffest; ++x) {
+        for (int y = leftOffest; y < mapSizeY + leftOffest; ++y) {
+            if (grid[x][y] == GridElement::VISITED) {
+                //std::cout << "Resetting: " << x << " " << y << std::endl;
+                grid[x][y] = GridElement::PATH;
             }
         }
     }

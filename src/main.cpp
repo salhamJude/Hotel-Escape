@@ -1,26 +1,37 @@
 #include "raylib.h"
-#include "map.h"
-
-int main()
+#include "game.h"
+int main(int argc, char* argv[])
 {
-    srand(time(NULL));
-    Color lightgray = Color{ 200, 200, 200, 255 };
+    srand(static_cast<unsigned int>(time(NULL)));
+    Color lightgray = { 200, 200, 200, 255 };
 
     const int screenWidth = 1000;
     const int screenHeight = 1000;
 
-    Map map(25, 35);
+    Game game;
+
+    // Initialize window
     InitWindow(screenWidth, screenHeight, "Hotel Escape");
     SetTargetFPS(60);
 
+    bool showMap = true;
+
     while (!WindowShouldClose())
     {
+
+
         BeginDrawing();
-        ClearBackground(lightgray);
-        map.drawMap();
+
+        {
+            ClearBackground(lightgray);
+            game.display();
+        }
+
         EndDrawing();
     }
 
+
     CloseWindow();
+
     return 0;
 }

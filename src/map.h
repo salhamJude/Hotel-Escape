@@ -2,7 +2,6 @@
 #define MAP_H
 
 
-#include "raylib.h"
 #include <vector> 
 #include "enumaration.h"
 #include "data.h"
@@ -19,13 +18,8 @@ class Map{
         Map();
         //void loadMap();
         void drawMap();
-        //void clearMap();
-        //void setMap(int x, int y);
-        //char getMap(int x, int y);
-        //void setMapSize(int x, int y);
-        //int getMapSizeX();
-        //int getMapSizeY();
         void generateMapElements();
+        void setPlayerPosition();
     private:
         void generateWalls();
         //void generateDoors();
@@ -33,7 +27,7 @@ class Map{
         void generateCountourWalls();
         //void generateEscapeDoor();
         void generateDoors();
-        void floodFill(int x, int y, std::vector<std::pair<int, int>>& enclosedArea, std::vector<std::vector<bool>> &visited);
+        void floodFill(int x, int y, std::vector<std::pair<int, int>>& enclosedArea);
         bool isEnclosed(const std::vector<std::pair<int, int>>& enclosedArea);
         void placeDoor(const std::vector<std::pair<int, int>>& enclosedArea);
         void detectAndFixEnclosedSpaces();

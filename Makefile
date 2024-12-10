@@ -27,7 +27,8 @@
 PROJECT_NAME       ?= game
 RAYLIB_VERSION     ?= 5.0.0
 RAYLIB_PATH        ?= C:\raylib\raylib
-
+# Define imgui path
+IMGUI_PATH         ?= C:\Users\MATHUSALEM\source\repos\Hotel-Escape\imgui
 # Define compiler path on Windows
 COMPILER_PATH      ?= C:/raylib/w64devkit/bin
 
@@ -251,6 +252,7 @@ endif
 # Define include paths for required headers
 # NOTE: Several external required libraries (stb and others)
 INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external
+INCLUDE_PATHS += -I$(IMGUI_PATH) -I$(IMGUI_PATH)/backends
 ifneq ($(wildcard /opt/homebrew/include/.*),)
     INCLUDE_PATHS += -I/opt/homebrew/include
 endif
@@ -368,9 +370,10 @@ SRC_DIR = src
 OBJ_DIR = obj
 
 # Define all object files from source files
-SRC = $(call rwildcard, *.c, *.h)
-#OBJS = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-OBJS ?= main.c
+SRC = src/main.cpp src/game.cpp src/door.cpp src/map.cpp 
+SRC += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp imgui/imgui_tables.cpp imgui/imgui_demo.cpp  imgui/backends/imgui_impl_opengl3.cpp imgui/backends/imgui_impl_glfw.cpp imgui/backends/imgui_impl_raylib.cpp
+OBJS = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+#OBJS ?= main.c
 
 # For Android platform we call a custom Makefile.Android
 ifeq ($(PLATFORM),PLATFORM_ANDROID)
@@ -418,4 +421,3 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
 	del *.o *.html *.js
 endif
 	@echo Cleaning done
-

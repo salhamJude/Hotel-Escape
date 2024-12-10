@@ -8,6 +8,7 @@
 #include "data.h"
 #include <cmath>
 #include <iostream>
+#include <queue>
 //#include "door.h"
 
 #define MAP_MAX_SIZE 50
@@ -32,9 +33,10 @@ class Map{
         void generateCountourWalls();
         //void generateEscapeDoor();
         void generateDoors();
-        void floodFill(int x, int y, std::vector<std::pair<int, int>>& spaceLocations, std::vector<std::vector<bool>>& visited); 
-        void placeDoorAroundSpace(const std::vector<std::pair<int, int>>& spaceLocations);
-        bool isInBounds(int x, int y);
+        void floodFill(int x, int y, std::vector<std::pair<int, int>>& enclosedArea, std::vector<std::vector<bool>> &visited);
+        bool isEnclosed(const std::vector<std::pair<int, int>>& enclosedArea);
+        void placeDoor(const std::vector<std::pair<int, int>>& enclosedArea);
+        void detectAndFixEnclosedSpaces();
         int mapSizeX;
         int mapSizeY;
         int mapMaxSizeX = MAP_MAX_SIZE;

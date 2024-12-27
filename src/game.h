@@ -26,11 +26,13 @@ private:
     int currentMap;
     unsigned int numMaps;
     std::pair<int, int> playerPosition;
-    void linkMaps();
+    bool linkMaps();
     
     //std::vector<std::pair<int, std::pair<int, int>>> doors;
     std::pair<int,Door> escapedDoor;
     std::vector<std::pair<int,Door>> doorsList;
+    float speed = 0.2;
+    float initialTime;
 };
 
 

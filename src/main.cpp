@@ -14,15 +14,15 @@ int main(int argc, char* argv[])
     InitWindow(screenWidth, screenHeight, "Hotel Escape");
     SetTargetFPS(60);
 
-    bool showMap = true;
+    //bool showMap = true;
 
     while (!WindowShouldClose())
     {
         BeginDrawing();
         {
             ClearBackground(lightgray);
-            game.display();
             game.handleInput();
+            game.display();
         }
 
         EndDrawing();

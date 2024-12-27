@@ -1,8 +1,8 @@
+main.code-workspace
+.gitattributes
+preview.png
 *.exe
 *.dsym
 lib
 imgui
 main
-main.code-workspace
-.gitattributes
-preview.png

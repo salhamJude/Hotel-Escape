@@ -7,7 +7,8 @@ enum GridElement {
     DOOR,
     ESCAPE_DOOR,
     EMPTY,
-    VISITED
+    VISITED,
+    COUNTOURED_WALL
 };
 
 enum Direction {

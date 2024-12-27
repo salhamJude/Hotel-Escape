@@ -9,6 +9,7 @@
 #include <iostream>
 #include <queue>
 #include <utility>
+#include "Player.h"
 //#include "door.h"
 
 #define MAP_MAX_SIZE 50
@@ -19,6 +20,7 @@ class Map{
         Map();
         //void loadMap();
         void drawMap();
+        void drawMap2(const Player& player);
         void generateMapElements();
         void setPlayerPosition(std::pair<int, int>& playerPosition);
         void movePlayer(Direction dir, std::pair<int, int>& playerPosition);
@@ -44,6 +46,7 @@ class Map{
         int tileSize = 20;
         std::vector<Color> tilesColors;
         std::vector<std::pair<int, int>> doors;
+        std::vector<std::pair<Texture2D, Rectangle>> tilesTextures;
 };
 
 #endif //MAP_H

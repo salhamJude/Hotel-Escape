@@ -44,6 +44,7 @@ Map::Map(int x, int y)
        }
     }
     tilesColors = Data::tilesColors();
+    tilesTextures = Data::tilesTextures();
     generateMapElements();
 }
 
@@ -84,6 +85,7 @@ Map::Map()
        }
     }
     tilesColors = Data::tilesColors();
+    tilesTextures = Data::tilesTextures();
     generateMapElements();
 }
 
@@ -103,6 +105,9 @@ void Map::drawMap()
             case GridElement::WALL:
                 clr = tilesColors[5];
                 break;
+            case GridElement::COUNTOURED_WALL:
+                clr = tilesColors[5];
+                break;
             case GridElement::PLAYER:
                 clr = tilesColors[2];
                 break;
@@ -118,6 +123,7 @@ void Map::drawMap()
             default:
                 break;
             }
+
             if(grid[row][column] == GridElement::EMPTY){
                 DrawRectangle(column * tileSize, row * tileSize, tileSize, tileSize, clr);
             }else{
@@ -127,6 +133,70 @@ void Map::drawMap()
        
     }
 
+}
+
+void Map::drawMap2(const Player& player)
+{
+    std::pair<Texture2D, Rectangle> texture;
+
+    
+    Rectangle dest = {0, 0, tileSize, tileSize};
+    float scaleFactor = 0.98f;
+    float scaledSize = tileSize * scaleFactor;
+    float gapOffset = (tileSize - scaledSize) / 2.0f;
+
+    for (int row = 0; row < mapMaxSizeX; row++)
+    {
+       for (int column = 0; column < mapMaxSizeY; column++)
+       {
+            switch (grid[row][column])
+            {
+            case GridElement::EMPTY:
+                texture = tilesTextures[4];
+                break;
+            case GridElement::WALL:
+                texture = tilesTextures[2];
+                break;
+            case GridElement::COUNTOURED_WALL:
+                texture = tilesTextures[5];
+                break;
+            case GridElement::PLAYER:
+                texture = tilesTextures[0];
+                break;
+            case GridElement::DOOR:
+                texture = tilesTextures[1];
+                break;
+            case GridElement::PATH:
+                texture = tilesTextures[0];
+                break;
+            case GridElement::VISITED:
+                texture = tilesTextures[0];
+                break;
+            default:
+                break;
+            }
+
+            if(grid[row][column] != GridElement::COUNTOURED_WALL && grid[row][column] != GridElement::EMPTY){
+                dest = {
+                        column * tileSize + gapOffset,
+                        row * tileSize + gapOffset,
+                        scaledSize,
+                        scaledSize
+                    };
+            }else{
+                dest = {0, 0, (float)tileSize, (float)tileSize};
+                dest.x = (column * tileSize);
+                dest.y = (row * tileSize);
+            }
+            DrawTexturePro(texture.first,texture.second,dest,(Vector2){0, 0},0.0f,WHITE);
+
+            if(grid[row][column] == GridElement::PLAYER){
+                player.draw(row, column, tileSize);
+            }   
+
+       }
+       
+    }
 }
 
 void Map::generateMapElements()
@@ -231,7 +301,7 @@ void Map::generateCountourWalls()
         {
             if(i >= topOffest -1 && i < mapSizeX + topOffest + 1 && j >= leftOffest -1 && j < mapSizeY + leftOffest + 1){
                 if((i == topOffest-1 || i == mapSizeX + topOffest) || (j == leftOffest-1 || j == mapSizeY + leftOffest)){
-                    grid[i][j] = GridElement::WALL;
+                    grid[i][j] = GridElement::COUNTOURED_WALL;
                 }
             }
             

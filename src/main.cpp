@@ -8,12 +8,12 @@ int main(int argc, char* argv[])
     const int screenWidth = 1000;
     const int screenHeight = 1000;
 
-    Game game;
+
 
     // Initialize window
     InitWindow(screenWidth, screenHeight, "Hotel Escape");
     SetTargetFPS(60);
-
+    Game game;
     //bool showMap = true;
 
     while (!WindowShouldClose())

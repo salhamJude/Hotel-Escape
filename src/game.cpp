@@ -1,5 +1,5 @@
 #include "Game.h"
-
+#include "raylib.h"
 
 
 Game::Game(/* args */)
@@ -28,6 +28,7 @@ Game::Game(/* args */)
     
 
     initialTime = GetTime();
+    player = Player();
 }
 
 Game::~Game()
@@ -36,53 +37,34 @@ Game::~Game()
 
 void Game::display()
 {
-    maps[currentMap].drawMap();
+    maps[currentMap].drawMap2(player);
 }
 void Game::handleInput()
 {
     double elapsedTime = GetTime() - initialTime;
-    std::cout << "Elapsed time: " << elapsedTime << std::endl;
     if(elapsedTime < speed){
         return;
     }
     if(IsKeyDown(KEY_UP)){
         movePlayer(UP);
+        player.updateRotation(0);
         initialTime = GetTime();
     }
     if(IsKeyDown(KEY_DOWN)){
         movePlayer(DOWN);
+        player.updateRotation(180);
         initialTime = GetTime();
     }
     if(IsKeyDown(KEY_LEFT)){
         movePlayer(LEFT);
+        player.updateRotation(270);
         initialTime = GetTime();
     }
     if(IsKeyDown(KEY_RIGHT)){
         movePlayer(RIGHT);
+        player.updateRotation(90);
         initialTime = GetTime();
     }
-   /*  int keyPressed = GetKeyPressed();
-
-    switch (keyPressed)
-    {
-    case KEY_LEFT:
-        movePlayer(LEFT);
-        break;
-    case KEY_RIGHT:
-        movePlayer(RIGHT);
-        break;
-    case KEY_UP:
-        movePlayer(UP);
-        break;
-    case KEY_DOWN:
-        movePlayer(DOWN);
-        break;
-    case KEY_B:
-        breakWall();
-        break;
-    default:
-        break;
-    } */
 }
 
 void Game::movePlayer(Direction dir)

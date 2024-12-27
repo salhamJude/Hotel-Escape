@@ -1,5 +1,4 @@
 #include <iostream>
-#include "raylib.h"
 #include <vector>   
 #include <ctime>
 #include <utility>
@@ -8,7 +7,7 @@
 #include <random>
 #include <map>
 #include "Map.h"
-
+#include "Player.h"
 class Game{
 public:
     Game(/* args */);
@@ -31,8 +30,9 @@ private:
     //std::vector<std::pair<int, std::pair<int, int>>> doors;
     std::pair<int,Door> escapedDoor;
     std::vector<std::pair<int,Door>> doorsList;
-    float speed = 0.2;
+    float speed = 0.35;
     float initialTime;
+    Player player;
 };
 
 

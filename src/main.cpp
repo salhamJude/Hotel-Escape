@@ -18,13 +18,11 @@ int main(int argc, char* argv[])
 
     while (!WindowShouldClose())
     {
-
-
         BeginDrawing();
-
         {
             ClearBackground(lightgray);
             game.display();
+            game.handleInput();
         }
 
         EndDrawing();

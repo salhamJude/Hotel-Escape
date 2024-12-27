@@ -8,6 +8,7 @@
 #include <cmath>
 #include <iostream>
 #include <queue>
+#include <utility>
 //#include "door.h"
 
 #define MAP_MAX_SIZE 50
@@ -19,10 +20,12 @@ class Map{
         //void loadMap();
         void drawMap();
         void generateMapElements();
-        void setPlayerPosition();
+        void setPlayerPosition(std::pair<int, int>& playerPosition);
+        void movePlayer(Direction dir, std::pair<int, int>& playerPosition);
+        void removeDoor(int x, int y);
+        std::vector<std::pair<int, int>> getDoors();
     private:
         void generateWalls();
-        //void generateDoors();
         void generateWall(int posX, int posY, Direction dir, int length, int mapSizeX, int mapSizeY);
         void generateCountourWalls();
         //void generateEscapeDoor();
@@ -40,7 +43,7 @@ class Map{
         GridElement grid[MAP_MAX_SIZE][MAP_MAX_SIZE];
         int tileSize = 20;
         std::vector<Color> tilesColors;
-        //std::vector<Door> doors;
+        std::vector<std::pair<int, int>> doors;
 };
 
 #endif //MAP_H

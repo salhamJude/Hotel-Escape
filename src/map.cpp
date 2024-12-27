@@ -1,4 +1,4 @@
-#include "map.h"
+#include "Map.h"
 #include "raylib.h"
 
 Map::Map(int x, int y)
@@ -143,7 +143,7 @@ void Map::generateWalls()
     int maxWallLength = mapSizeY / 2 + (mapSizeY / 4);
     int wallLength, posY, posX;
     Direction dir;
-    std::cout << "nbrWall: " << nbrWall << std::endl;
+    //std::cout << "nbrWall: " << nbrWall << std::endl;
     for (int i = 0; i < nbrWall; i++)
     {
         posY = rand() % (this->leftOffest + 1 + (this->leftOffest + mapSizeY));
@@ -265,11 +265,11 @@ void Map::floodFill(int x, int y, std::vector<std::pair<int, int>>& enclosedArea
 }
 
 bool Map::isEnclosed(const std::vector<std::pair<int, int>>& enclosedArea) {
-    std::cout << "Enclosed area: " ;
+    //std::cout << "Enclosed area: " ;
     for (auto& cell : enclosedArea) {
         int x = cell.first, y = cell.second;
         if (x == topOffest-1  || x == mapSizeX + topOffest   || y == leftOffest-1   || y == mapSizeY + leftOffest  ) {
-            std::cout << "opened: " << std::endl;
+            //std::cout << "opened: " << std::endl;
             return false; // Not enclosed if it touches the boundary
         }
     }
@@ -287,6 +287,7 @@ void Map::placeDoor(const std::vector<std::pair<int, int>>& enclosedArea) {
                 int oppositeY = ny - dir.second;
                 if (grid[oppositeX][oppositeY] != GridElement::PATH) {
                     grid[nx][ny] = GridElement::DOOR;
+                    doors.push_back({nx, ny});
                     //std::cout << "placeDoor at "<<nx << " " << ny << std::endl;
                     return;
                 }
@@ -295,7 +296,7 @@ void Map::placeDoor(const std::vector<std::pair<int, int>>& enclosedArea) {
     }
 }
 
-void Map::setPlayerPosition()
+void Map::setPlayerPosition(std::pair<int, int>& playerPosition)
 {
     int set = false;
     do
@@ -306,6 +307,8 @@ void Map::setPlayerPosition()
         if(grid[x][y] == GridElement::PATH){
             set = true;
             grid[x][y] = GridElement::PLAYER;
+            playerPosition.first = x;
+            playerPosition.second = y;
         }
 
     } while (!set);
@@ -340,4 +343,56 @@ void Map::detectAndFixEnclosedSpaces() {
 
 void Map::generateDoors() {
     detectAndFixEnclosedSpaces();
+}
+
+void Map::movePlayer(Direction dir, std::pair<int, int>& playerPosition){
+    int x = playerPosition.first;
+    int y = playerPosition.second;
+    if(grid[x][y] != GridElement::PLAYER){
+        std::cout << "Player not found" << std::endl;
+        return;
+    }
+
+    if(dir == UP){
+        if(grid[x - 1][y] == GridElement::PATH){
+            grid[x][y] = GridElement::PATH;
+            grid[x - 1][y] = GridElement::PLAYER;
+            playerPosition.first = x - 1;
+            playerPosition.second = y;
+        }
+    }else if(dir == DOWN){
+        if(grid[x + 1][y] == GridElement::PATH){
+            grid[x][y] = GridElement::PATH;
+            grid[x + 1][y] = GridElement::PLAYER;
+            playerPosition.first = x + 1;
+            playerPosition.second = y;
+        }
+    }else if(dir == LEFT){
+        if(grid[x][y - 1] == GridElement::PATH){
+            grid[x][y] = GridElement::PATH;
+            grid[x][y - 1] = GridElement::PLAYER;
+            playerPosition.first = x;
+            playerPosition.second = y - 1;
+        }
+    }else if(dir == RIGHT){
+        if(grid[x][y + 1] == GridElement::PATH){
+            grid[x][y] = GridElement::PATH;
+            grid[x][y + 1] = GridElement::PLAYER;
+            playerPosition.first = x;
+            playerPosition.second = y + 1;
+        }
+    }   
+}
+
+void Map::removeDoor(int x, int y)
+{
+    if(grid[x][y] == GridElement::DOOR){
+        grid[x][y] = GridElement::PATH;
+        std::cout << "Door removed" << std::endl;
+    }
+}
+
+std::vector<std::pair<int, int>> Map::getDoors()
+{
+    return doors;
 }

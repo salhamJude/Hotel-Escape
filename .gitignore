@@ -3,3 +3,6 @@
 lib
 imgui
 main
+main.code-workspace
+.gitattributes
+preview.png

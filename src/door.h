@@ -5,18 +5,28 @@
 
 class Door{
     public:
-        Door(int x, int y, const Map& from, const Map& to);
-        //void setX(int x);
-        //void setY(int y);
-        //int getX();
-        //int getY();
-        //void draw();
-        //void erase();
+        Door();
+        Door(int x, int y, int  from);
+        Door(int x, int y, int dx, int dy, int  from, int  to);
+        void setDestination(int x, int y);
+        void setOrigin(int x, int y);
+        void setFrom(int  from);
+        void setTo(int  to);
+        bool isCorrecpondingDoor(int x, int y, int from); 
+        bool hasDestination();  
+        int getFrom();
+        int getTo();
+        int getDestinationX();
+        int getDestinationY();
+        int getOriginX();
+        int getOriginY();
     private:
-        int x;
-        int y;
-        Map from;
-        Map to;
+        int ox;
+        int oy;
+        int dx;
+        int dy;
+        int from;
+        int to;
 };
 
 #endif //DOOR_H

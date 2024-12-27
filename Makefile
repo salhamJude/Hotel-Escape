@@ -252,7 +252,7 @@ endif
 # Define include paths for required headers
 # NOTE: Several external required libraries (stb and others)
 INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external
-INCLUDE_PATHS += -I$(IMGUI_PATH) -I$(IMGUI_PATH)/backends
+#INCLUDE_PATHS += -I$(IMGUI_PATH) -I$(IMGUI_PATH)/backends
 ifneq ($(wildcard /opt/homebrew/include/.*),)
     INCLUDE_PATHS += -I/opt/homebrew/include
 endif
@@ -371,7 +371,7 @@ OBJ_DIR = obj
 
 # Define all object files from source files
 SRC = src/main.cpp src/game.cpp src/door.cpp src/map.cpp 
-SRC += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp imgui/imgui_tables.cpp imgui/imgui_demo.cpp  imgui/backends/imgui_impl_opengl3.cpp imgui/backends/imgui_impl_glfw.cpp imgui/backends/imgui_impl_raylib.cpp
+#SRC += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp imgui/imgui_tables.cpp imgui/imgui_demo.cpp  imgui/backends/imgui_impl_opengl3.cpp imgui/backends/imgui_impl_glfw.cpp imgui/backends/imgui_impl_raylib.cpp
 OBJS = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 #OBJS ?= main.c
 

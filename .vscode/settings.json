@@ -70,6 +70,10 @@
 		"xtree": "cpp",
 		"xutility": "cpp",
 		"numbers": "cpp",
-		"*.tcc": "cpp"
+		"*.tcc": "cpp",
+		"functional": "cpp",
+		"list": "cpp",
+		"unordered_map": "cpp",
+		"xhash": "cpp"
 	}
 }

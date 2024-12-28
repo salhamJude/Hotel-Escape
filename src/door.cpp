@@ -44,9 +44,12 @@ void Door::setTo(int to)
     this->to = to;
 }
 
-bool Door::isCorrecpondingDoor(int x, int y, int from)
+bool Door::isCorrecpondingDoor(int x, int y, int fr)
 {
-    if (x == dx && y == dy && from == this->from)
+    std::cout << "Checking if door is corresponding" << std::endl;
+    std::cout << "x: " << x << " y: " << y << " from: " << fr << std::endl;
+    std::cout << "dx: " << dx << " dy: " << dy << " from: " << from << std::endl;
+    if (x == dx && y == dy && fr == this->from)
     {
         return true;
     }

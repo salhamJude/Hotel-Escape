@@ -12,7 +12,7 @@ class Door{
         void setOrigin(int x, int y);
         void setFrom(int  from);
         void setTo(int  to);
-        bool isCorrecpondingDoor(int x, int y, int from); 
+        bool isCorrecpondingDoor(int x, int y, int fr); 
         bool hasDestination();  
         int getFrom();
         int getTo();

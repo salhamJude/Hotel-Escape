@@ -26,11 +26,12 @@ private:
     unsigned int numMaps;
     std::pair<int, int> playerPosition;
     bool linkMaps();
+    bool teleport(int x, int y);
     
     //std::vector<std::pair<int, std::pair<int, int>>> doors;
     std::pair<int,Door> escapedDoor;
     std::vector<std::pair<int,Door>> doorsList;
-    float speed = 0.35;
+    float speed = 0.275;
     float initialTime;
     Player player;
 };

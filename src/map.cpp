@@ -89,6 +89,37 @@ Map::Map()
     generateMapElements();
 }
 
+Map& Map::operator=(const Map& other)
+{
+    // Check for self-assignment
+    if (this == &other) {
+        return *this;  // Return the current object to handle the case of self-assignment
+    }
+
+    // Copy the simple data members
+    mapSizeX = other.mapSizeX;
+    mapSizeY = other.mapSizeY;
+    topOffest = other.topOffest;
+    leftOffest = other.leftOffest;
+    
+    // Copy the grid elements
+    for (int i = 0; i < mapMaxSizeX; i++) {
+        for (int j = 0; j < mapMaxSizeY; j++) {
+            grid[i][j] = other.grid[i][j];
+        }
+    }
+
+    // Copy the tiles colors and textures
+    tilesColors = other.tilesColors;
+    tilesTextures = other.tilesTextures;
+
+    // Re-generate map elements (optional, depending on whether you want the elements recalculated on assignment)
+    generateMapElements();
+
+    // Return the current object to allow chained assignment (a = b = c)
+    return *this;
+}
+
 void Map::drawMap()
 {  
     Color clr;
@@ -411,11 +442,35 @@ void Map::detectAndFixEnclosedSpaces() {
     }
 }
 
+void Map::move(int x, int y, std::pair<int, int>& playerPosition)
+{
+    int px = playerPosition.first;
+    int py = playerPosition.second;
+
+    grid[px][py] = GridElement::PATH;
+    grid[px + x][py + y] = GridElement::PLAYER;
+    playerPosition.first = px + x;
+    playerPosition.second = py + y;
+}
+
+void Map::teleport(int x, int y, std::pair<int, int> &playerPosition, std::function<bool(int,int)> teleportCallBack)
+{
+    int px = playerPosition.first;
+    int py = playerPosition.second;
+
+    if(teleportCallBack(px + x, py + y)){
+        std::cout << "Teleporting player" << std::endl;
+        grid[px][py] = GridElement::PATH;
+    }else{
+        std::cout << "Door is closed" << std::endl;
+    }
+}
+
 void Map::generateDoors() {
     detectAndFixEnclosedSpaces();
 }
 
-void Map::movePlayer(Direction dir, std::pair<int, int>& playerPosition){
+void Map::movePlayer(Direction dir, std::pair<int, int>& playerPosition, std::function<bool(int,int)> teleportCallBack){
     int x = playerPosition.first;
     int y = playerPosition.second;
     if(grid[x][y] != GridElement::PLAYER){
@@ -423,33 +478,31 @@ void Map::movePlayer(Direction dir, std::pair<int, int>& playerPosition){
         return;
     }
 
+
+
     if(dir == UP){
         if(grid[x - 1][y] == GridElement::PATH){
-            grid[x][y] = GridElement::PATH;
-            grid[x - 1][y] = GridElement::PLAYER;
-            playerPosition.first = x - 1;
-            playerPosition.second = y;
+            move(-1, 0, playerPosition);
+        }else if(grid[x - 1][y] == GridElement::DOOR){
+            teleport(-1, 0, playerPosition, teleportCallBack);
         }
     }else if(dir == DOWN){
         if(grid[x + 1][y] == GridElement::PATH){
-            grid[x][y] = GridElement::PATH;
-            grid[x + 1][y] = GridElement::PLAYER;
-            playerPosition.first = x + 1;
-            playerPosition.second = y;
+            move(1, 0, playerPosition);
+        }else if(grid[x + 1][y] == GridElement::DOOR){
+            teleport(1, 0, playerPosition, teleportCallBack);
         }
     }else if(dir == LEFT){
         if(grid[x][y - 1] == GridElement::PATH){
-            grid[x][y] = GridElement::PATH;
-            grid[x][y - 1] = GridElement::PLAYER;
-            playerPosition.first = x;
-            playerPosition.second = y - 1;
+            move(0, -1, playerPosition);
+        }else if(grid[x][y - 1] == GridElement::DOOR){
+            teleport(0, -1, playerPosition, teleportCallBack);
         }
     }else if(dir == RIGHT){
         if(grid[x][y + 1] == GridElement::PATH){
-            grid[x][y] = GridElement::PATH;
-            grid[x][y + 1] = GridElement::PLAYER;
-            playerPosition.first = x;
-            playerPosition.second = y + 1;
+            move(0, 1, playerPosition);
+        }else if(grid[x][y + 1] == GridElement::DOOR){
+            teleport(0, +1, playerPosition, teleportCallBack);
         }
     }   
 }
@@ -465,4 +518,32 @@ void Map::removeDoor(int x, int y)
 std::vector<std::pair<int, int>> Map::getDoors()
 {
     return doors;
+}
+
+bool Map::openDoor(int x, int y, std::pair<int, int> &playerPosition)
+{
+    if(grid[x][y] == GridElement::DOOR){
+        if(grid[x + 1 ][y] == GridElement::PATH){
+            grid[x+ 1][y] = GridElement::PLAYER;
+            playerPosition.first = x + 1;
+            playerPosition.second = y;
+            return true;
+        }else if(grid[x - 1 ][y] == GridElement::PATH){
+            grid[x - 1][y] = GridElement::PLAYER;
+            playerPosition.first = x - 1;
+            playerPosition.second = y;
+            return true;
+        }else if(grid[x][y + 1] == GridElement::PATH){
+            grid[x][y + 1] = GridElement::PLAYER;
+            playerPosition.first = x;
+            playerPosition.second = y + 1;
+            return true;
+        }else if(grid[x][y - 1] == GridElement::PATH){
+            grid[x][y - 1] = GridElement::PLAYER;
+            playerPosition.first = x;
+            playerPosition.second = y - 1;
+            return true;
+        }
+    }
+    return false;
 }

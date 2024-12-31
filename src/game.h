@@ -28,6 +28,7 @@ private:
     bool linkMaps();
     bool teleport(int x, int y);
     bool breakWall();
+    void drawInfo();
     
     //std::vector<std::pair<int, std::pair<int, int>>> doors;
     std::pair<int,Door> escapedDoor;
@@ -35,6 +36,8 @@ private:
     float speed = 3;
     float initialTime;
     Player player;
+    Font font;
+    int chrono;
 };
 
 

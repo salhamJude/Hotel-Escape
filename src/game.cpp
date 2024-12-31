@@ -1,11 +1,13 @@
 #include "Game.h"
 #include "raylib.h"
-
+#include "data.h"
+#include <string>
 
 Game::Game(/* args */)
 {
     srand(time(NULL));
-
+    
+    font = LoadFontEx("./font/monogram.tff", 64, 0, 0);
     
     player = Player();
 
@@ -16,8 +18,8 @@ Game::Game(/* args */)
         doorsList.clear();
         
         while (validMapsCount < numMaps) {
-            int x = rand() % 48;
-            int y = rand() % 48;
+            int x = 50;//rand() % 48;
+            int y = 50;rand() % 48;
             Map map(x, y);
             if(map.getDoors().size() == 0){
                 continue;
@@ -39,6 +41,7 @@ Game::Game(/* args */)
     maps[currentMap].setPlayerPosition(playerPosition, player);
     initialTime = GetTime();
     std::cout << "Current level " << currentMap << std::endl;
+    chrono = 180;
 }
 
 Game::~Game()
@@ -48,6 +51,7 @@ Game::~Game()
 void Game::display()
 {
     maps[currentMap].drawMap2(player);
+    drawInfo();
 }
 void Game::handleInput()
 {
@@ -109,6 +113,20 @@ bool Game::breakWall()
         return false;
     }
     return maps[currentMap].breakWall(player, dir, speed);
+}
+
+void Game::drawInfo()
+{
+    DrawTextEx(font, "Level", {1060, 15}, 64, 2, WHITE);
+    DrawTextEx(font, "Timer", {1060, 250}, 64, 2, WHITE);
+    DrawRectangleRounded({1020, 100, 260, 60}, 0.3, 6, Data::tilesColors()[2]);
+    DrawRectangleRounded({1020, 325, 260, 60}, 0.3, 6, Data::tilesColors()[2]);
+
+    std::string s = std::to_string(currentMap);
+    DrawTextEx(font, s.c_str(), {1128, 105}, 56, 2, WHITE);
+
+    s = std::to_string((int)(chrono - GetTime()));
+    DrawTextEx(font, s.c_str(), {1109, 330}, 56, 2, WHITE);
 }
 
 int Game::getNumMaps()

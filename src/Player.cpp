@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "raylib.h"
+#include <iostream>
 
 Player::Player()
 {
@@ -15,6 +16,17 @@ void Player::draw(int x, int y, int tileSize) const
 
     dest.x = (y * tileSize);
     dest.y = (x * tileSize);
+
+    DrawTexturePro(texture.first,texture.second,dest,(Vector2){0, 0},0,WHITE);
+}
+
+void Player::draw(int tileSize) const
+{
+    std::pair<Texture2D, Rectangle> texture = playerTextures[currentTexture];
+    Rectangle dest = {0, 0, (float)tileSize, (float)tileSize};
+
+    dest.x = (position.second);
+    dest.y = (position.first);
 
     DrawTexturePro(texture.first,texture.second,dest,(Vector2){0, 0},0,WHITE);
 }
@@ -43,4 +55,20 @@ void Player::updateRotation(float rotation)
     {
         currentTexture = 2;
     }
+}
+
+void Player::updatePosition(int x, int y, int tileSize)
+{
+    position = {x * tileSize, y * tileSize};
+    //std::cout << "Player is at position (" << position.first << ", " << position.second << ")" << std::endl;
+}
+
+std::pair<int, int> Player::getPosition()
+{
+    return position;
+}
+
+float Player::getRotation() const
+{
+    return rotation;
 }

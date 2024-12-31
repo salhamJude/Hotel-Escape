@@ -8,13 +8,13 @@
 #include <map>
 #include "Map.h"
 #include "Player.h"
+#include "enumaration.h"
 class Game{
 public:
     Game(/* args */);
     void display();
     void handleInput();
     void movePlayer(Direction dir);
-    void breakWall();
     int getNumMaps();
     int getCurrentMap();
     void nextMap();
@@ -27,11 +27,12 @@ private:
     std::pair<int, int> playerPosition;
     bool linkMaps();
     bool teleport(int x, int y);
+    bool breakWall();
     
     //std::vector<std::pair<int, std::pair<int, int>>> doors;
     std::pair<int,Door> escapedDoor;
     std::vector<std::pair<int,Door>> doorsList;
-    float speed = 0.275;
+    float speed = 3;
     float initialTime;
     Player player;
 };

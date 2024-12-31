@@ -22,13 +22,14 @@ class Map{
         Map& operator=(const Map& other);
         //void loadMap();
         void drawMap();
-        void drawMap2(const Player& player);
+        void drawMap2(Player& player);
         void generateMapElements();
-        void setPlayerPosition(std::pair<int, int>& playerPosition);
-        void movePlayer(Direction dir, std::pair<int, int>& playerPosition, std::function<bool(int,int)> teleportCallBack);
+        void setPlayerPosition(std::pair<int, int>& playerPosition, Player& Player);
+        void movePlayer(Direction dir, Player& player, std::function<bool(int,int)> teleportCallBack, int speed);
         void removeDoor(int x, int y);
         std::vector<std::pair<int, int>> getDoors();
-        bool openDoor(int x, int y, std::pair<int, int>& playerPosition);
+        bool openDoor(int x, int y, Player& player);
+        bool breakWall(Player& player, Direction dir, int speed);
     private:
         void generateWalls();
         void generateWall(int posX, int posY, Direction dir, int length, int mapSizeX, int mapSizeY);
@@ -39,8 +40,8 @@ class Map{
         bool isEnclosed(const std::vector<std::pair<int, int>>& enclosedArea);
         void placeDoor(const std::vector<std::pair<int, int>>& enclosedArea);
         void detectAndFixEnclosedSpaces();
-        void move(int x, int y, std::pair<int, int>& playerPosition);
-        void teleport(int x, int y, std::pair<int, int>& playerPosition, std::function<bool(int,int)> teleportCallBack);
+        void move(int x, int y, Player& player, int speed);
+        void teleport(int x, int y, Player& player, std::function<bool(int,int)> teleportCallBack);
         int mapSizeX;
         int mapSizeY;
         int mapMaxSizeX = MAP_MAX_SIZE;
@@ -52,6 +53,7 @@ class Map{
         std::vector<Color> tilesColors;
         std::vector<std::pair<int, int>> doors;
         std::vector<std::pair<Texture2D, Rectangle>> tilesTextures;
+        int snapToGrid(int position);
 };
 
 #endif //MAP_H

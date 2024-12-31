@@ -7,9 +7,6 @@ int main(int argc, char* argv[])
 
     const int screenWidth = 1000;
     const int screenHeight = 1000;
-
-
-
     // Initialize window
     InitWindow(screenWidth, screenHeight, "Hotel Escape");
     SetTargetFPS(60);

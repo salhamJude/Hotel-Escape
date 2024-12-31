@@ -6,6 +6,9 @@ Game::Game(/* args */)
 {
     srand(time(NULL));
 
+    
+    player = Player();
+
     numMaps = rand() % 12 + 3;
     unsigned int validMapsCount = 0;
     do{
@@ -28,14 +31,13 @@ Game::Game(/* args */)
         }
         numMaps = maps.size();
 
-        currentMap = rand() % numMaps;
-        maps[currentMap].setPlayerPosition(playerPosition);
         system("cls");
     }while (!linkMaps());
     
-
+    
+    currentMap = rand() % numMaps;
+    maps[currentMap].setPlayerPosition(playerPosition, player);
     initialTime = GetTime();
-    player = Player();
     std::cout << "Current level " << currentMap << std::endl;
 }
 
@@ -49,10 +51,15 @@ void Game::display()
 }
 void Game::handleInput()
 {
-    double elapsedTime = GetTime() - initialTime;
-    if(elapsedTime < speed){
-        return;
+    int key = GetKeyPressed();
+    if(key == KEY_LEFT_ALT){
+       breakWall();
     }
+    double elapsedTime = GetTime() - initialTime;
+    /* if(elapsedTime < speed){
+        return;
+    } */
+
     if(IsKeyDown(KEY_UP)){
         movePlayer(UP);
         player.updateRotation(0);
@@ -78,11 +85,30 @@ void Game::handleInput()
 void Game::movePlayer(Direction dir)
 {
     std::function<bool(int,int)> f = std::bind(&Game::teleport, this, std::placeholders::_1, std::placeholders::_2);
-    maps[currentMap].movePlayer(dir, playerPosition, f);
+    maps[currentMap].movePlayer(dir, player, f, speed);
 }
 
-void Game::breakWall()
+bool Game::breakWall()
 {
+    Direction dir;
+    switch ((int)player.getRotation())
+    {
+    case 0:
+        dir = UP;
+        break;
+    case 90:
+        dir = RIGHT;
+        break;
+    case 180:
+        dir = DOWN;
+        break;
+    case 270:
+        dir = LEFT;
+        break;
+    default:
+        return false;
+    }
+    return maps[currentMap].breakWall(player, dir, speed);
 }
 
 int Game::getNumMaps()
@@ -98,30 +124,32 @@ int Game::getCurrentMap()
 void Game::nextMap()
 {
     currentMap = (currentMap + 1) ;
-    maps[currentMap].setPlayerPosition(playerPosition);
+    maps[currentMap].setPlayerPosition(playerPosition, player);
 }
 
 void Game::previousMap()
 {
     currentMap = (currentMap - 1);
-    maps[currentMap].setPlayerPosition(playerPosition);
+    maps[currentMap].setPlayerPosition(playerPosition, player);
 }
 
 bool Game::linkMaps()
 {
-    std::cout << "Linking maps" << std::endl;
+
+    /* std::cout << "Linking maps" << std::endl;
     std::cout << "Total levels: " << numMaps << std::endl;
 
     // Step 1: Group doors by level
-    std::cout << "Grouping doors by level" << std::endl;
+    std::cout << "Grouping doors by level" << std::endl; */
     std::map<int, std::vector<std::pair<int, Door>>> levelDoors;
+    
     for (auto door : doorsList)
     {
         levelDoors[door.first].push_back(door);
     }
 
     // Step 2: Find levels with only one door
-    std::cout << "Finding levels with only one door" << std::endl;
+    //std::cout << "Finding levels with only one door" << std::endl;
     std::vector<int> singleDoorLevels;
     for (const auto& level : levelDoors)
     {
@@ -129,7 +157,7 @@ bool Game::linkMaps()
             singleDoorLevels.push_back(level.first);
     }
 
-    std::cout << "Levels with only one door: ";
+    //std::cout << "Levels with only one door: ";
     for (auto level : singleDoorLevels)
     {
         std::cout << level << " ";
@@ -137,12 +165,12 @@ bool Game::linkMaps()
     std::cout << std::endl;
 
     if(singleDoorLevels.size() == numMaps){
-        std::cout << "All levels have only one door, cannot link maps" << std::endl;
+        //std::cout << "All levels have only one door, cannot link maps" << std::endl;
         return false;
     }
 
     // Step 3: Shuffle doors and select escaped door
-    std::cout << "Shuffling doors and selecting escaped door" << std::endl;
+    //std::cout << "Shuffling doors and selecting escaped door" << std::endl;
     std::shuffle(doorsList.begin(), doorsList.end(), std::mt19937(std::random_device{}()));
     
     int rd;
@@ -153,14 +181,14 @@ bool Game::linkMaps()
     escapedDoor = doorsList[rd];
     doorsList[rd].second.setTo(-1);
     doorsList[rd].second.setDestination(-1, -1);
-    std::cout << "door from level " 
+    /* std::cout << "door from level " 
     << escapedDoor.first 
     <<"[" << escapedDoor.second.getOriginX() << "," << escapedDoor.second.getOriginY() << "]" 
     << " is the escaped door"
-    << std::endl;
+    << std::endl; */
 
     // Step 4: Link doors across levels
-    std::cout << "Linking doors across levels" << std::endl;
+    //std::cout << "Linking doors across levels" << std::endl;
     for ( int i = 0; i < doorsList.size(); i++)
     {
         if (i == rd || doorsList[i].second.hasDestination())
@@ -169,6 +197,10 @@ bool Game::linkMaps()
         for ( int j = i + 1; j < doorsList.size(); j++)
         {
             if (j == rd || doorsList[j].second.hasDestination() || doorsList[i].first == doorsList[j].first)
+                continue;
+
+            // Check if both doors are from levels with only one door
+            if(levelDoors[doorsList[i].first].size() == 1 && levelDoors[doorsList[j].first].size() == 1)
                 continue;
 
             doorsList[i].second.setTo(doorsList[j].first);
@@ -180,7 +212,7 @@ bool Game::linkMaps()
     }
 
     // Step 5: Handle unlinked doors
-    std::cout << "Handling unlinked doors" << std::endl;
+    //std::cout << "Handling unlinked doors" << std::endl;
     std::vector<int> unlinkedDoors;  // To track unlinked doors
 
     for ( int i = 0; i < doorsList.size(); i++)
@@ -233,15 +265,15 @@ bool Game::linkMaps()
     }
 
     // Step 6: If there is exactly one unlinked door, link it randomly to another door
-    std::cout << "Linking unlinked doors" << std::endl;
+    //std::cout << "Linking unlinked doors" << std::endl;
     if (unlinkedDoors.size() == 1)
     {
         int unlinkedDoorIndex = unlinkedDoors[0];
-        std::cout << "Linking unlinked door at level " 
+        /* std::cout << "Linking unlinked door at level " 
         << doorsList[unlinkedDoorIndex].first 
         <<"[" << doorsList[unlinkedDoorIndex].second.getOriginX() << "," << doorsList[unlinkedDoorIndex].second.getOriginY() << "]"
         <<  " to level "
-        << " randomly" << std::endl;
+        << " randomly" << std::endl; */
 
         // Find another door to link to
         int randomDoorIndex;
@@ -256,7 +288,7 @@ bool Game::linkMaps()
 
         // Make sure the link is one-way (no back-linking)
     }
-
+/* 
     std::cout << std::endl;
     std::cout << "Final door connections:" << std::endl;
     for (auto& door : doorsList) {
@@ -268,7 +300,7 @@ bool Game::linkMaps()
         <<"[" << door.second.getDestinationX() << "," << door.second.getDestinationY() << "]"
          << std::endl;
     }
-    std::cout << "Linking maps process finished" << std::endl;
+    std::cout << "Linking maps process finished" << std::endl; */
     return true;
 }
 
@@ -288,8 +320,8 @@ bool Game::teleport(int x, int y)
             if (door.first == currentMap && door.second.getFrom() == currentMap && door.second.getOriginX() == x && door.second.getOriginY() == y)
             {
                 currentMap = door.second.getTo();
-                if(!maps[currentMap].openDoor(door.second.getDestinationX(), door.second.getDestinationY(), playerPosition)){
-                    std::cout << "Door is closed" << std::endl;
+                if(!maps[currentMap].openDoor(door.second.getDestinationX(), door.second.getDestinationY(), player)){
+                    std::cout << "Door in the destination map is closed" << std::endl;
                     return false;
                 }else{
                     std::cout << "Teleporting player to level " << currentMap << std::endl;
@@ -302,3 +334,5 @@ bool Game::teleport(int x, int y)
     std::cout << "Can not teleporting player to another level" << std::endl;
     return false;
 }
+
+

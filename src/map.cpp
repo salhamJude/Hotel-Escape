@@ -1,5 +1,7 @@
 #include "Map.h"
 #include "raylib.h"
+#include "raymath.h"
+#include <cmath>
 
 Map::Map(int x, int y)
 {
@@ -166,7 +168,7 @@ void Map::drawMap()
 
 }
 
-void Map::drawMap2(const Player& player)
+void Map::drawMap2(Player& player)
 {
     std::pair<Texture2D, Rectangle> texture;
 
@@ -222,12 +224,14 @@ void Map::drawMap2(const Player& player)
             DrawTexturePro(texture.first,texture.second,dest,(Vector2){0, 0},0.0f,WHITE);
 
             if(grid[row][column] == GridElement::PLAYER){
-                player.draw(row, column, tileSize);
+                //player.draw(row, column, tileSize);
             }   
 
        }
        
     }
+
+    player.draw(tileSize);
 }
 
 void Map::generateMapElements()
@@ -397,7 +401,7 @@ void Map::placeDoor(const std::vector<std::pair<int, int>>& enclosedArea) {
     }
 }
 
-void Map::setPlayerPosition(std::pair<int, int>& playerPosition)
+void Map::setPlayerPosition(std::pair<int, int>& playerPosition, Player& Player)
 {
     int set = false;
     do
@@ -407,13 +411,14 @@ void Map::setPlayerPosition(std::pair<int, int>& playerPosition)
 
         if(grid[x][y] == GridElement::PATH){
             set = true;
-            grid[x][y] = GridElement::PLAYER;
-            playerPosition.first = x;
-            playerPosition.second = y;
+            //grid[x][y] = GridElement::PLAYER;
+            playerPosition.first = x * tileSize;
+            playerPosition.second = y * tileSize;
         }
+        //std::cout << "Player is at position (" << x << ", " << y << ")" << std::endl;
 
     } while (!set);
-    
+    Player.updatePosition(playerPosition.first, playerPosition.second, 1);
 }
 
 void Map::detectAndFixEnclosedSpaces() {
@@ -442,69 +447,88 @@ void Map::detectAndFixEnclosedSpaces() {
     }
 }
 
-void Map::move(int x, int y, std::pair<int, int>& playerPosition)
+void Map::move(int x, int y, Player& player, int speed)
 {
-    int px = playerPosition.first;
-    int py = playerPosition.second;
-
-    grid[px][py] = GridElement::PATH;
-    grid[px + x][py + y] = GridElement::PLAYER;
-    playerPosition.first = px + x;
-    playerPosition.second = py + y;
+    Vector2 motion = {x, y};
+    Vector2 movementThisFrame = Vector2Scale(motion, GetFrameTime() * speed * tileSize);    
+    int px = player.getPosition().first;
+    int py = player.getPosition().second;
+    Vector2 pos  = Vector2Add({(float)px, (float)py}, movementThisFrame);
+    player.updatePosition(pos.x, pos.y, 1);
 }
 
-void Map::teleport(int x, int y, std::pair<int, int> &playerPosition, std::function<bool(int,int)> teleportCallBack)
+void Map::teleport(int x, int y, Player& player, std::function<bool(int,int)> teleportCallBack)
 {
-    int px = playerPosition.first;
-    int py = playerPosition.second;
+    int px = player.getPosition().first;
+    int py = player.getPosition().second;
 
-    if(teleportCallBack(px + x, py + y)){
+    px /= tileSize;
+    py /= tileSize;
+
+    if(teleportCallBack(x, y)){
         std::cout << "Teleporting player" << std::endl;
-        grid[px][py] = GridElement::PATH;
     }else{
-        std::cout << "Door is closed" << std::endl;
+        std::cout << "Door in current map is closed" << std::endl;
     }
+}
+
+int Map::snapToGrid(int position)
+{
+    return (position / tileSize) * tileSize + tileSize / 2;
 }
 
 void Map::generateDoors() {
     detectAndFixEnclosedSpaces();
 }
 
-void Map::movePlayer(Direction dir, std::pair<int, int>& playerPosition, std::function<bool(int,int)> teleportCallBack){
-    int x = playerPosition.first;
-    int y = playerPosition.second;
-    if(grid[x][y] != GridElement::PLAYER){
-        std::cout << "Player not found" << std::endl;
-        return;
-    }
+void Map::movePlayer(Direction dir, Player& player, std::function<bool(int,int)> teleportCallBack, int speed){
+    
+    int offset = tileSize / tileSize;
 
-
+    int x = player.getPosition().first;
+    int y = player.getPosition().second;
 
     if(dir == UP){
+
+        x = ((x + (offset) + speed) / tileSize) + 1;
+        y = (y + (offset) + speed) / tileSize;
+
         if(grid[x - 1][y] == GridElement::PATH){
-            move(-1, 0, playerPosition);
+            move(-1, 0, player, speed);
         }else if(grid[x - 1][y] == GridElement::DOOR){
-            teleport(-1, 0, playerPosition, teleportCallBack);
+            teleport(x - 1, y, player, teleportCallBack);
         }
     }else if(dir == DOWN){
+
+        x = (x + (offset) + speed) / tileSize;
+        y = (y + (offset) + speed) / tileSize;
+
         if(grid[x + 1][y] == GridElement::PATH){
-            move(1, 0, playerPosition);
+            move(1, 0, player, speed);
         }else if(grid[x + 1][y] == GridElement::DOOR){
-            teleport(1, 0, playerPosition, teleportCallBack);
+            teleport(x + 1, y, player, teleportCallBack);
         }
     }else if(dir == LEFT){
+
+        x = (x + (offset) + speed) / tileSize;
+        y = ((y + (offset) + speed) / tileSize) + 1;
+
         if(grid[x][y - 1] == GridElement::PATH){
-            move(0, -1, playerPosition);
+            move(0, -1, player, speed);
         }else if(grid[x][y - 1] == GridElement::DOOR){
-            teleport(0, -1, playerPosition, teleportCallBack);
+            teleport(x, y - 1, player, teleportCallBack);
         }
     }else if(dir == RIGHT){
+
+        x = (x + (offset) + speed) / tileSize;
+        y = (y + (offset) + speed) / tileSize;
+
         if(grid[x][y + 1] == GridElement::PATH){
-            move(0, 1, playerPosition);
+            move(0, 1, player, speed);
         }else if(grid[x][y + 1] == GridElement::DOOR){
-            teleport(0, +1, playerPosition, teleportCallBack);
+            teleport(x, y + 1, player, teleportCallBack);
         }
-    }   
+    }
 }
 
 void Map::removeDoor(int x, int y)
@@ -520,28 +544,74 @@ std::vector<std::pair<int, int>> Map::getDoors()
     return doors;
 }
 
-bool Map::openDoor(int x, int y, std::pair<int, int> &playerPosition)
+bool Map::openDoor(int x, int y, Player& player)
 {
     if(grid[x][y] == GridElement::DOOR){
         if(grid[x + 1 ][y] == GridElement::PATH){
-            grid[x+ 1][y] = GridElement::PLAYER;
-            playerPosition.first = x + 1;
-            playerPosition.second = y;
+            int px = (x + 1) * tileSize;
+            int py = y * tileSize;
+            player.updatePosition(px, py, 1);
             return true;
         }else if(grid[x - 1 ][y] == GridElement::PATH){
-            grid[x - 1][y] = GridElement::PLAYER;
-            playerPosition.first = x - 1;
-            playerPosition.second = y;
+            int px = (x - 1) * tileSize;
+            int py = y * tileSize;
+            player.updatePosition(px, py, 1);
             return true;
         }else if(grid[x][y + 1] == GridElement::PATH){
-            grid[x][y + 1] = GridElement::PLAYER;
-            playerPosition.first = x;
-            playerPosition.second = y + 1;
+            int px = x * tileSize;
+            int py = (y + 1) * tileSize;
+            player.updatePosition(px, py, 1);
             return true;
         }else if(grid[x][y - 1] == GridElement::PATH){
-            grid[x][y - 1] = GridElement::PLAYER;
-            playerPosition.first = x;
-            playerPosition.second = y - 1;
+            int px = x * tileSize;
+            int py = (y - 1) * tileSize;
+            player.updatePosition(px, py, 1);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Map::breakWall(Player& player, Direction dir, int speed)
+{
+    int offset = tileSize / tileSize;
+    int x = player.getPosition().first;
+    int y = player.getPosition().second;
+
+    if(dir == UP){
+
+        x = ((x + (offset) + speed) / tileSize) + 1;
+        y = (y + (offset) + speed) / tileSize;
+
+        if(grid[x - 1][y] == GridElement::WALL){
+            grid[x - 1][y] = GridElement::PATH;
+            return true;
+        }
+    }else if(dir == DOWN){
+
+        x = (x + (offset) + speed) / tileSize;
+        y = (y + (offset) + speed) / tileSize;
+
+        if(grid[x + 1][y] == GridElement::WALL){
+            grid[x + 1][y] = GridElement::PATH;
+            return true;
+        }
+    }else if(dir == LEFT){
+
+        x = (x + (offset) + speed) / tileSize;
+        y = ((y + (offset) + speed) / tileSize) + 1;
+
+        if(grid[x][y - 1] == GridElement::WALL){
+            grid[x][y - 1] = GridElement::PATH;
+            return true;
+        }
+    }else if(dir == RIGHT){
+
+        x = (x + (offset) + speed) / tileSize;
+        y = (y + (offset) + speed) / tileSize;
+
+        if(grid[x][y + 1] == GridElement::WALL){
+            grid[x][y + 1] = GridElement::PATH;
             return true;
         }
     }

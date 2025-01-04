@@ -6,6 +6,7 @@
 #include "raylib.h"
 
 namespace Data {
+    
     inline std::vector<Color> tilesColors () {
 
         Color black = {0, 0, 0, 255};

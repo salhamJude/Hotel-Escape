@@ -2,6 +2,10 @@
 #include "raylib.h"
 #include "data.h"
 #include <string>
+#include "Button.h"
+
+const double MENU_STATE_DURATION = 5.0;
+const double MENU2_STATE_DURATION = 2.0;
 
 Game::Game(/* args */)
 {
@@ -9,81 +13,57 @@ Game::Game(/* args */)
     
     font = LoadFontEx("./font/monogram.tff", 64, 0, 0);
     
-    player = Player();
-
-    numMaps = rand() % 12 + 3;
-    unsigned int validMapsCount = 0;
-    do{
-        maps.clear();
-        doorsList.clear();
-        
-        while (validMapsCount < numMaps) {
-            int x = 50;//rand() % 48;
-            int y = 50;rand() % 48;
-            Map map(x, y);
-            if(map.getDoors().size() == 0){
-                continue;
-            }
-            maps.push_back(map);
-            for(auto door : map.getDoors()){
-                Door d(door.first, door.second, validMapsCount);
-                doorsList.push_back({validMapsCount, d});
-            }
-            validMapsCount++;
-        }
-        numMaps = maps.size();
-
-        system("cls");
-    }while (!linkMaps());
+    menu = GetRandomValue(1,3) % 2 == 0 ? LoadTexture("./ressources/menu1.png") : LoadTexture("./ressources/menu2.png");
     
     
-    currentMap = rand() % numMaps;
-    maps[currentMap].setPlayerPosition(playerPosition, player);
-    initialTime = GetTime();
-    std::cout << "Current level " << currentMap << std::endl;
-    chrono = 180;
 }
 
 Game::~Game()
 {
+    UnloadTexture(menu);
+    UnloadTexture(menu2);
 }
 
 void Game::display()
 {
+    if(!onGoing){
+        drawMenu();
+        return;
+    }
     maps[currentMap].drawMap2(player);
     drawInfo();
 }
 void Game::handleInput()
 {
-    int key = GetKeyPressed();
-    if(key == KEY_LEFT_ALT){
-       breakWall();
-    }
-    double elapsedTime = GetTime() - initialTime;
-    /* if(elapsedTime < speed){
-        return;
-    } */
+    
+   if(onGoing){
+        int key = GetKeyPressed();
+        if(key == KEY_LEFT_ALT){
+        breakWall();
+        }
 
-    if(IsKeyDown(KEY_UP)){
+        if(IsKeyDown(KEY_UP)){
         movePlayer(UP);
         player.updateRotation(0);
         initialTime = GetTime();
-    }
-    if(IsKeyDown(KEY_DOWN)){
-        movePlayer(DOWN);
-        player.updateRotation(180);
-        initialTime = GetTime();
-    }
-    if(IsKeyDown(KEY_LEFT)){
-        movePlayer(LEFT);
-        player.updateRotation(270);
-        initialTime = GetTime();
-    }
-    if(IsKeyDown(KEY_RIGHT)){
-        movePlayer(RIGHT);
-        player.updateRotation(90);
-        initialTime = GetTime();
-    }
+        }
+        if(IsKeyDown(KEY_DOWN)){
+            movePlayer(DOWN);
+            player.updateRotation(180);
+            initialTime = GetTime();
+        }
+        if(IsKeyDown(KEY_LEFT)){
+            movePlayer(LEFT);
+            player.updateRotation(270);
+            initialTime = GetTime();
+        }
+        if(IsKeyDown(KEY_RIGHT)){
+            movePlayer(RIGHT);
+            player.updateRotation(90);
+            initialTime = GetTime();
+        }
+   }
+    
 }
 
 void Game::movePlayer(Direction dir)
@@ -127,6 +107,57 @@ void Game::drawInfo()
 
     s = std::to_string((int)(chrono - GetTime()));
     DrawTextEx(font, s.c_str(), {1109, 330}, 56, 2, WHITE);
+}
+
+void Game::drawMenu()
+{
+  
+    
+    DrawTexturePro(menu, {0, 0, (float)menu.width, (float)menu.height}, {0, 0, 1300, 1000}, {0, 0}, 0, WHITE);
+
+    Button start("New Game", {250, 500}, {150, 60}, Data::tilesColors()[2], WHITE);
+    Button quit("Quit", {250, 600}, {150, 60}, Data::tilesColors()[2], WHITE);
+}
+
+void Game::newGame()
+{
+    player = Player();
+
+    numMaps = rand() % 12 + 3;
+    unsigned int validMapsCount = 0;
+    do{
+        maps.clear();
+        doorsList.clear();
+        
+        while (validMapsCount < numMaps) {
+            int x = 50;//rand() % 48;
+            int y = 50;rand() % 48;
+            Map map(x, y);
+            if(map.getDoors().size() == 0){
+                continue;
+            }
+            maps.push_back(map);
+            for(auto door : map.getDoors()){
+                Door d(door.first, door.second, validMapsCount);
+                doorsList.push_back({validMapsCount, d});
+            }
+            validMapsCount++;
+        }
+        numMaps = maps.size();
+
+        system("cls");
+    }while (!linkMaps());
+    
+    
+    currentMap = rand() % numMaps;
+    maps[currentMap].setPlayerPosition(playerPosition, player);
+    initialTime = GetTime();
+    initialTime2 = GetTime();
+    std::cout << "Current level " << currentMap << std::endl;
+    chrono = 180;
+
+    onGoing = true;
+
 }
 
 int Game::getNumMaps()

@@ -29,15 +29,23 @@ private:
     bool teleport(int x, int y);
     bool breakWall();
     void drawInfo();
+    void drawMenu();
+    void newGame();
     
     //std::vector<std::pair<int, std::pair<int, int>>> doors;
     std::pair<int,Door> escapedDoor;
     std::vector<std::pair<int,Door>> doorsList;
     float speed = 3;
     float initialTime;
+    float initialTime2;
     Player player;
     Font font;
     int chrono;
+
+    bool onGoing = false;
+    bool pause = false;
+    bool gameOver = false;
+    Texture2D menu;
 };
 
 

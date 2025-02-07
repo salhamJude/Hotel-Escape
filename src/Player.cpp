@@ -23,7 +23,7 @@ void Player::draw(int x, int y, int tileSize) const
     dest.x = (y * tileSize);
     dest.y = (x * tileSize);
 
-    DrawTexturePro(texture.first,texture.second,dest,(Vector2){0, 0},0,WHITE);
+    DrawTexturePro(texture.first,texture.second,dest,Vector2{0, 0},0,WHITE);
 }
 
 void Player::draw(int tileSize) const
@@ -34,7 +34,7 @@ void Player::draw(int tileSize) const
     dest.x = (position.second);
     dest.y = (position.first);
 
-    DrawTexturePro(texture.first,texture.second,dest,(Vector2){0, 0},0,WHITE);
+    DrawTexturePro(texture.first,texture.second,dest,Vector2{0, 0},0,WHITE);
 }
 
 void Player::updateRotation(float rotation)

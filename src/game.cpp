@@ -27,6 +27,10 @@ Game::~Game()
     UnloadFont(font);
     delete start;
     delete quit;
+    delete player;
+    for(auto map : maps){
+        delete map;
+    }
 }
 
 void Game::display()
@@ -36,7 +40,7 @@ void Game::display()
         return;
     }
 
-    maps[currentMap].drawMap2(player);
+    maps[currentMap]->drawMap2(*player);
     drawInfo();
 }
 
@@ -51,19 +55,19 @@ void Game::handleInput()
 
         if(IsKeyDown(KEY_UP)){
         movePlayer(UP);
-        player.updateRotation(0);
+        player->updateRotation(0);
         }
         if(IsKeyDown(KEY_DOWN)){
             movePlayer(DOWN);
-            player.updateRotation(180);
+            player->updateRotation(180);
         }
         if(IsKeyDown(KEY_LEFT)){
             movePlayer(LEFT);
-            player.updateRotation(270);
+            player->updateRotation(270);
         }
         if(IsKeyDown(KEY_RIGHT)){
             movePlayer(RIGHT);
-            player.updateRotation(90);
+            player->updateRotation(90);
         }
    }
     
@@ -72,13 +76,13 @@ void Game::handleInput()
 void Game::movePlayer(Direction dir)
 {
     std::function<bool(int,int)> f = std::bind(&Game::teleport, this, std::placeholders::_1, std::placeholders::_2);
-    maps[currentMap].movePlayer(dir, player, f, speed);
+    maps[currentMap]->movePlayer(dir, *player, f, speed);
 }
 
 bool Game::breakWall()
 {
     Direction dir;
-    switch ((int)player.getRotation())
+    switch ((int)player->getRotation())
     {
     case 0:
         dir = UP;
@@ -95,7 +99,7 @@ bool Game::breakWall()
     default:
         return false;
     }
-    return maps[currentMap].breakWall(player, dir, speed);
+    return maps[currentMap]->breakWall(*player, dir, speed);
 }
 
 void Game::drawInfo()
@@ -152,7 +156,7 @@ void Game::drawMenu()
 void Game::newGame()
 {
     std::cout << "Starting new game" << std::endl;
-    player = Player();
+    player = new Player();
 
     numMaps = rand() % 12 + 3;
     unsigned int validMapsCount = 0;
@@ -163,12 +167,12 @@ void Game::newGame()
         while (validMapsCount < numMaps) {
             int x = 50;//rand() % 48;
             int y = 50;rand() % 48;
-            Map map(x, y);
-            if(map.getDoors().size() == 0){
+            Map *map = new Map(x, y);
+            if(map->getDoors().size() == 0){
                 continue;
             }
             maps.push_back(map);
-            for(auto door : map.getDoors()){
+            for(auto door : map->getDoors()){
                 Door d(door.first, door.second, validMapsCount);
                 doorsList.push_back({validMapsCount, d});
             }
@@ -176,15 +180,14 @@ void Game::newGame()
         }
         numMaps = maps.size();
 
-        //system("cls");
+        system("cls");
     }while (!linkMaps());
     
     
     currentMap = rand() % numMaps;
-    maps[currentMap].setPlayerPosition(playerPosition, player);
+    maps[currentMap]->setPlayerPosition(playerPosition, *player);
     initialTime = GetTime();
     std::cout << "Current level " << currentMap << std::endl;
-    chrono = 180;
     startTime = GetTime();
     won = false;
     onGoing = true;
@@ -202,6 +205,7 @@ void Game::quitGame()
 void Game::win()
 {
     std::cout << "You win" << std::endl;
+    clean();
     won = true;
     onGoing = false;
     gameOver = false;
@@ -214,11 +218,25 @@ int Game::getRemainingTime()
     return std::max(0, chrono - (int)(GetTime() - startTime)); // Prevent negative values
 }
 
+void Game::clean()
+{
+    for(auto map : maps){
+        delete map;
+    }
+    maps.clear();
+    doorsList.clear();
+    delete player;
+    playerPosition = {0, 0};
+    escapedDoor = {0, Door()};
+    doorsList.clear();
+}
+
 void Game::onGaming()
 {
     if (onGoing){
         int remainingTime = getRemainingTime();
         if(remainingTime == 0){
+            clean();
             onGoing = false;
             gameOver = true;
             std::cout << "Game Over" << std::endl;
@@ -239,13 +257,13 @@ int Game::getCurrentMap()
 void Game::nextMap()
 {
     currentMap = (currentMap + 1) ;
-    maps[currentMap].setPlayerPosition(playerPosition, player);
+    maps[currentMap]->setPlayerPosition(playerPosition, *player);
 }
 
 void Game::previousMap()
 {
     currentMap = (currentMap - 1);
-    maps[currentMap].setPlayerPosition(playerPosition, player);
+    maps[currentMap]->setPlayerPosition(playerPosition, *player);
 }
 
 bool Game::linkMaps()
@@ -436,7 +454,7 @@ bool Game::teleport(int x, int y)
             if (door.first == currentMap && door.second.getFrom() == currentMap && door.second.getOriginX() == x && door.second.getOriginY() == y)
             {
                 currentMap = door.second.getTo();
-                if(!maps[currentMap].openDoor(door.second.getDestinationX(), door.second.getDestinationY(), player)){
+                if(!maps[currentMap]->openDoor(door.second.getDestinationX(), door.second.getDestinationY(), *player)){
                     std::cout << "Door in the destination map is closed" << std::endl;
                     return false;
                 }else{

@@ -38,7 +38,7 @@ private:
     void win();
     int getRemainingTime();
     
-    std::vector<Map> maps;
+    std::vector<Map*> maps;
     int currentMap;
     unsigned int numMaps;
     std::pair<int, int> playerPosition;
@@ -48,12 +48,12 @@ private:
     float speed = 3;
     float initialTime;
     float initialTime2;
-    Player player;
+    Player *player;
     Font font;
-    int chrono;
+    int chrono = 5;
     int startTime;
     
-
+    void clean();
     bool won = false;
     bool onGoing = false;
     bool pause = false;

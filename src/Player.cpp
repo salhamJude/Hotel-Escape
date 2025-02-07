@@ -4,8 +4,14 @@
 
 Player::Player()
 {
-    playerTextures = Data::playerTextures();
+    texture = LoadTexture("./ressources/character/doctor.png");
+    playerTextures = getPlayerTextures();
     rotation = 0.0f;
+}
+
+Player::~Player()
+{
+    UnloadTexture(texture);
 }
 
 void Player::draw(int x, int y, int tileSize) const
@@ -71,4 +77,30 @@ std::pair<int, int> Player::getPosition()
 float Player::getRotation() const
 {
     return rotation;
+}
+
+std::vector<std::pair<Texture2D, Rectangle>> Player::getPlayerTextures()
+{
+    std::vector<std::pair<Texture2D, Rectangle>> players;
+
+    //going east
+    Rectangle rec = {48, 96, 48, 48};
+    players.push_back({texture, rec});
+
+    //going north
+    //texture = LoadTexture("./ressources/character/C_Walk_NORTH_strip4.png");
+    rec = {48, 144, 48, 48};
+    players.push_back({texture, rec});
+
+    //going west
+    //texture = LoadTexture("./ressources/character/C_Walk_WEST_strip4.png");
+    rec = {48, 48, 48, 48};
+    players.push_back({texture, rec});
+
+    //going south
+    //texture = LoadTexture("./ressources/character/C_Walk_SOUTH_strip4.png");
+    rec = {48, 0, 48, 48};
+    players.push_back({texture, rec});
+
+    return players;
 }

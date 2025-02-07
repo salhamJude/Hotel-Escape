@@ -9,7 +9,6 @@ Button::Button(std::string text, Vector2 position, Vector2 size, Color color, Co
     this->textColor = textColor;
     this->isHovered = false;
     this->isClicked = false;
-    draw(); 
 }
 
 Button::~Button()
@@ -25,6 +24,40 @@ void Button::draw()
         DrawRectangleRounded(rec, 2, 0.3, GRAY);
     }else{
         DrawRectangleRounded(rec, 2, 0.3, color);
+        isClicked = false;
     }
-    DrawText(text.c_str(), position.x + (size.x * 0.2), position.y + (size.y * 0.3), 20, textColor);
+
+    int textWidth = MeasureText(text.c_str(), 20);
+    int textX = position.x + (size.x - textWidth) / 2;
+    int textY = position.y + (size.y - 20) / 2;
+    DrawText(text.c_str(), textX, textY, 20, textColor);
+
+    this->handleClick();
+}
+
+void Button::setAction(std::function<void()> action)
+{
+    if(!actionset){
+        this->action = action;
+        actionset = true;
+    }
+}
+
+void Button::handleClick()
+{
+    if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+        if(isHovered && !isClicked){
+            isClicked = true;
+            if(actionset){
+                this->action();
+            }else{
+                std::cout << "Action not set" << std::endl;
+            }
+        }
+    }
+
+    if(IsMouseButtonUp(MOUSE_BUTTON_LEFT)){
+        isClicked = false;
+    }
+    
 }

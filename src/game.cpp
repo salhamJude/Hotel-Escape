@@ -2,7 +2,6 @@
 #include "raylib.h"
 #include "data.h"
 #include <string>
-#include "Button.h"
 
 const double MENU_STATE_DURATION = 5.0;
 const double MENU2_STATE_DURATION = 2.0;
@@ -15,13 +14,19 @@ Game::Game(/* args */)
     
     menu = GetRandomValue(1,3) % 2 == 0 ? LoadTexture("./ressources/menu1.png") : LoadTexture("./ressources/menu2.png");
     
-    
+    start = new  Button("New Game", {250, 500}, {150, 60}, Data::tilesColors()[2], WHITE);
+    start->setAction(std::bind(&Game::newGame, this));
+
+    quit = new Button("Quit", {250, 600}, {150, 60}, Data::tilesColors()[2], WHITE);
+    quit->setAction(std::bind(&Game::quitGame, this));
 }
 
 Game::~Game()
 {
     UnloadTexture(menu);
-    UnloadTexture(menu2);
+    UnloadFont(font);
+    delete start;
+    delete quit;
 }
 
 void Game::display()
@@ -30,9 +35,11 @@ void Game::display()
         drawMenu();
         return;
     }
+
     maps[currentMap].drawMap2(player);
     drawInfo();
 }
+
 void Game::handleInput()
 {
     
@@ -45,22 +52,18 @@ void Game::handleInput()
         if(IsKeyDown(KEY_UP)){
         movePlayer(UP);
         player.updateRotation(0);
-        initialTime = GetTime();
         }
         if(IsKeyDown(KEY_DOWN)){
             movePlayer(DOWN);
             player.updateRotation(180);
-            initialTime = GetTime();
         }
         if(IsKeyDown(KEY_LEFT)){
             movePlayer(LEFT);
             player.updateRotation(270);
-            initialTime = GetTime();
         }
         if(IsKeyDown(KEY_RIGHT)){
             movePlayer(RIGHT);
             player.updateRotation(90);
-            initialTime = GetTime();
         }
    }
     
@@ -97,30 +100,58 @@ bool Game::breakWall()
 
 void Game::drawInfo()
 {
+    int textWidth = 0;
+    int textX = 0;
+    int textY = 0;
+
     DrawTextEx(font, "Level", {1060, 15}, 64, 2, WHITE);
     DrawTextEx(font, "Timer", {1060, 250}, 64, 2, WHITE);
+
     DrawRectangleRounded({1020, 100, 260, 60}, 0.3, 6, Data::tilesColors()[2]);
     DrawRectangleRounded({1020, 325, 260, 60}, 0.3, 6, Data::tilesColors()[2]);
 
+    // Draw level number
     std::string s = std::to_string(currentMap);
-    DrawTextEx(font, s.c_str(), {1128, 105}, 56, 2, WHITE);
+    Vector2 textSize = MeasureTextEx(font, s.c_str(), 56, 2);
+    textX = 1020 + (260 - textSize.x) / 2;  // Center text horizontally
+    textY = 100 + (60 - textSize.y) / 2;    // Center text vertically
+    DrawTextEx(font, s.c_str(), {(float)textX, (float)textY}, 56, 2, WHITE);
 
-    s = std::to_string((int)(chrono - GetTime()));
-    DrawTextEx(font, s.c_str(), {1109, 330}, 56, 2, WHITE);
+    // Draw remaining time
+    int remainingTime = getRemainingTime();
+    s = std::to_string(remainingTime);
+    
+    textSize = MeasureTextEx(font, s.c_str(), 56, 2);
+    textX = 1020 + (260 - textSize.x) / 2;
+    textY = 325 + (60 - textSize.y) / 2;
+
+    Color textColor = (remainingTime > 10) ? WHITE : RED;
+    DrawTextEx(font, s.c_str(), {(float)textX, (float)textY}, 56, 2, textColor);
 }
 
 void Game::drawMenu()
 {
-  
     
     DrawTexturePro(menu, {0, 0, (float)menu.width, (float)menu.height}, {0, 0, 1300, 1000}, {0, 0}, 0, WHITE);
-
-    Button start("New Game", {250, 500}, {150, 60}, Data::tilesColors()[2], WHITE);
-    Button quit("Quit", {250, 600}, {150, 60}, Data::tilesColors()[2], WHITE);
+    if(won){
+         DrawTextEx(font,"You escaped just in time", {(float)150, (float)250}, 23, 2, RED);
+         if((winMenuChrono - (int)(GetTime() - initialTime2)) < 0){
+             won = false;
+         }
+    }
+    else{
+        if(gameOver){
+            DrawTextEx(font,"GAME OVER", {(float)150, (float)250}, 56, 2, RED);
+        }
+        start->draw();
+        quit->draw();
+    }
+    
 }
 
 void Game::newGame()
 {
+    std::cout << "Starting new game" << std::endl;
     player = Player();
 
     numMaps = rand() % 12 + 3;
@@ -145,19 +176,54 @@ void Game::newGame()
         }
         numMaps = maps.size();
 
-        system("cls");
+        //system("cls");
     }while (!linkMaps());
     
     
     currentMap = rand() % numMaps;
     maps[currentMap].setPlayerPosition(playerPosition, player);
     initialTime = GetTime();
-    initialTime2 = GetTime();
     std::cout << "Current level " << currentMap << std::endl;
     chrono = 180;
-
+    startTime = GetTime();
+    won = false;
     onGoing = true;
+    pause = false;
+    gameOver = false;
 
+}
+
+void Game::quitGame()
+{
+    std::cout << "Quitting game" << std::endl;
+    CloseWindow();
+}
+
+void Game::win()
+{
+    std::cout << "You win" << std::endl;
+    won = true;
+    onGoing = false;
+    gameOver = false;
+    initialTime2 = GetTime();
+    std::cout << "Game Over" << std::endl;
+}
+
+int Game::getRemainingTime()
+{
+    return std::max(0, chrono - (int)(GetTime() - startTime)); // Prevent negative values
+}
+
+void Game::onGaming()
+{
+    if (onGoing){
+        int remainingTime = getRemainingTime();
+        if(remainingTime == 0){
+            onGoing = false;
+            gameOver = true;
+            std::cout << "Game Over" << std::endl;
+        }
+    }
 }
 
 int Game::getNumMaps()
@@ -360,6 +426,7 @@ bool Game::teleport(int x, int y)
     {
         //thee player is in the escaped door
         std::cout << "Player is in the escaped door" << std::endl;
+        win();
         return false;
     }
     else{

@@ -370,7 +370,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 
 # Define all object files from source files
-SRC = src/main.cpp src/game.cpp src/door.cpp src/map.cpp src/player.cpp src/Button.cpp
+SRC = src/main.cpp src/game.cpp src/door.cpp src/map.cpp src/player.cpp src/Button.cpp 
 #SRC += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp imgui/imgui_tables.cpp imgui/imgui_demo.cpp  imgui/backends/imgui_impl_opengl3.cpp imgui/backends/imgui_impl_glfw.cpp imgui/backends/imgui_impl_raylib.cpp
 OBJS = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 #OBJS ?= main.c

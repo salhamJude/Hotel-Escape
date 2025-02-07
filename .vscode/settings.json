@@ -76,6 +76,8 @@
 		"unordered_map": "cpp",
 		"xhash": "cpp",
 		"*.m": "cpp",
-		"string_view": "cpp"
+		"string_view": "cpp",
+		"cwctype": "cpp",
+		"numeric": "cpp"
 	}
 }

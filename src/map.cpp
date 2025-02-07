@@ -45,8 +45,10 @@ Map::Map(int x, int y)
             }
        }
     }
+    
+    tileTexture = LoadTexture("./ressources/tiles.png");
     tilesColors = Data::tilesColors();
-    tilesTextures = Data::tilesTextures();
+    tilesTextures = getTilesTextures();
     generateMapElements();
 }
 
@@ -86,9 +88,16 @@ Map::Map()
             }
        }
     }
+    
+    tileTexture = LoadTexture("./ressources/tiles.png");
     tilesColors = Data::tilesColors();
-    tilesTextures = Data::tilesTextures();
+    tilesTextures = getTilesTextures();
     generateMapElements();
+}
+
+Map::~Map()
+{
+    UnloadTexture(tileTexture);
 }
 
 Map& Map::operator=(const Map& other)
@@ -221,7 +230,7 @@ void Map::drawMap2(Player& player)
                 dest.x = (column * tileSize);
                 dest.y = (row * tileSize);
             }
-            DrawTexturePro(texture.first,texture.second,dest,(Vector2){0, 0},0.0f,WHITE);
+            DrawTexturePro(texture.first,texture.second,dest,Vector2{0, 0},0.0f,WHITE);
 
             if(grid[row][column] == GridElement::PLAYER){
                 //player.draw(row, column, tileSize);
@@ -243,8 +252,8 @@ void Map::generateMapElements()
 
 void Map::generateWalls()
 {
-    
-    int nbrWall = (mapSizeX * mapSizeY) / 60 + rand() % ((mapSizeX * mapSizeY) / 40 - (mapSizeX * mapSizeY) / 100 + 1);
+
+    int nbrWall = (mapSizeX * mapSizeY) / desnity + rand() % ((mapSizeX * mapSizeY) / variation - (mapSizeX * mapSizeY) / fluctuation + 1);
     int maxWallLength = mapSizeY / 2 + (mapSizeY / 4);
     int wallLength, posY, posX;
     Direction dir;
@@ -472,6 +481,36 @@ void Map::teleport(int x, int y, Player& player, std::function<bool(int,int)> te
     }
 }
 
+std::vector<std::pair<Texture2D, Rectangle>> Map::getTilesTextures() 
+{
+        std::vector<std::pair<Texture2D, Rectangle>> tiles;
+
+        //tile 1 for path
+        Rectangle rec = {240, 48, 48, 48};
+        tiles.push_back({tileTexture, rec});
+
+        //tile 29 for door
+        rec = {192, 144, 48, 48};
+        tiles.push_back({tileTexture, rec});
+
+        //tile 18 for wall
+        rec = {48, 96, 48, 48};
+        tiles.push_back({tileTexture, rec});
+
+        //tile 8
+        rec = {144, 96, 48, 48};
+        tiles.push_back({tileTexture, rec});
+
+        //tile 20 for empty
+        rec = {144, 96, 48, 48};
+        tiles.push_back({tileTexture, rec});
+
+        //tile 19 for contoured wall
+        rec = {96, 96, 48, 48};
+        tiles.push_back({tileTexture, rec});
+        return tiles;
+}
+
 int Map::snapToGrid(int position)
 {
     return (position / tileSize) * tileSize + tileSize / 2;
@@ -617,3 +656,4 @@ bool Map::breakWall(Player& player, Direction dir, int speed)
     }
     return false;
 }
+

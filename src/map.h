@@ -19,6 +19,7 @@ class Map{
     public:
         Map(int x, int y);
         Map();
+        ~Map();
         Map& operator=(const Map& other);
         //void loadMap();
         void drawMap();
@@ -42,6 +43,7 @@ class Map{
         void detectAndFixEnclosedSpaces();
         void move(int x, int y, Player& player, int speed);
         void teleport(int x, int y, Player& player, std::function<bool(int,int)> teleportCallBack);
+        std::vector<std::pair<Texture2D, Rectangle>> getTilesTextures();
         int mapSizeX;
         int mapSizeY;
         int mapMaxSizeX = MAP_MAX_SIZE;
@@ -54,6 +56,10 @@ class Map{
         std::vector<std::pair<int, int>> doors;
         std::vector<std::pair<Texture2D, Rectangle>> tilesTextures;
         int snapToGrid(int position);
+        int desnity = 120;
+        int variation = 40;
+        int fluctuation  = 100;
+        Texture2D tileTexture;
 };
 
 #endif //MAP_H

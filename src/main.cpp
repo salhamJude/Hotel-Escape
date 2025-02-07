@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "game.h"
+
 int main(int argc, char* argv[])
 {
     srand(static_cast<unsigned int>(time(NULL)));
@@ -18,6 +19,7 @@ int main(int argc, char* argv[])
         BeginDrawing();
         {
             ClearBackground(lightgray);
+            game.onGaming();
             game.handleInput();
             game.display();
         }
